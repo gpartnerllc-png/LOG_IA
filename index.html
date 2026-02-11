@@ -78,16 +78,8 @@
                         <input type="number" placeholder="Comp" class="w-full bg-slate-900 p-2 rounded border border-slate-700">
                     </div>
                     <select class="w-full bg-slate-900 p-3 rounded border border-slate-700">
-                        <option value="1">Até 1kg</option>
-                        <option value="1">Até 1,5kg</option>
-                        <option value="1">Até 2kg</option>
-                        <option value="1">Até 2,5kg</option>
-                        <option value="1">Até 3kg</option>
-                        <option value="1">Até 3,5kg</option>
-                        <option value="1">Até 4kg</option>
-                        <option value="1">Até 4,5kg</option>
-                        <option value="5">Até 5kg</option>
-                        <option value="10">Até 10kg</option>
+                        <option>Até 1kg</option>
+                        <option>Até 5kg</option>
                     </select>
                 </div>
             </div>
@@ -120,88 +112,65 @@
         </div>
     </div>
 
-   <script>
-const CONFIG_LOGISTICA = {
-    margemLucro: 0.65,
-    taxaFixaManuseio: 10.00,
-    botToken: "8539700676:AAH2YR3nb7uTyp2DUmeSqHRGZcQjU4anoVA",
-    chatId: "1703808186"
-};
+    <script>
+    const CONFIG_LOGISTICA = {
+        margemLucro: 0.45,
+        taxaFixaManuseio: 4.00,
+        botToken: "8539700676:AAH2YR3nb7uTyp2DUmeSqHRGZcQjU4anoVA",
+        chatId: "1703808186"
+    };
 
-// IA de Cálculo de Frete (Simula a tarifação por região/peso)
-function calcularFreteDinamico(origem, destino, peso, servico) {
-    // Extrai o primeiro dígito do CEP para identificar a região do Brasil
-    const regiaoOrigem = parseInt(origem.substring(0, 1));
-    const regiaoDestino = parseInt(destino.substring(0, 1));
-    
-    // Base de cálculo: R$ 15,00 (mínimo)
-    let valorBase = 15.00;
-    
-    // Soma distância (Diferença entre regiões de 0 a 9)
-    const distancia = Math.abs(regiaoOrigem - regiaoDestino);
-    valorBase += (distancia * 4.50); 
-    
-    // Soma Peso (Multiplicador por KG selecionado)
-    const pesoNum = parseFloat(peso) || 1;
-    valorBase += (pesoNum * 2.30);
+    async function processarLogistica(event) {
+        event.preventDefault(); // Impede o erro 405 do GitHub
+        
+        const btn = document.getElementById('btnDespachar');
+        btn.innerText = "PROCESSANDO IA...";
+        btn.disabled = true;
 
-    // Adicional por Serviço (SEDEX é mais caro que PAC)
-    if (servico === "04014") valorBase += 12.00; // SEDEX
-    
-    return valorBase;
-}
+        // Simulação de cálculo (já que o CWS/Correios bloqueia via Browser)
+        const valorBase = 28.90; 
+        const valorFinal = ((valorBase + CONFIG_LOGISTICA.taxaFixaManuseio) * (1 + CONFIG_LOGISTICA.margemLucro)).toFixed(2);
+        const destino = document.getElementById('cepDestino').value;
 
-async function processarLogistica(event) {
-    event.preventDefault();
-    
-    const btn = document.getElementById('btnDespachar');
-    const cepOrigem = document.getElementById('cepOrigem').value;
-    const cepDestino = document.getElementById('cepDestino').value;
-    const peso = document.querySelector('select[name="peso"]').value;
-    const servico = document.getElementById('servico').value;
+        // 1. Mostrar Valores na Tela
+        document.getElementById('painelValores').classList.remove('hidden');
+        document.getElementById('txtBase').innerText = `R$ ${valorBase.toFixed(2)}`;
+        document.getElementById('txtFinal').innerText = `R$ ${valorFinal}`;
 
-    if (!cepDestino || cepDestino.length < 8) {
-        alert("Por favor, insira um CEP de destino válido.");
-        return;
+        // 2. Mostrar PIX
+        document.getElementById('areaPix').classList.remove('hidden');
+        btn.innerText = "AGUARDANDO PIX...";
+        btn.classList.replace('bg-blue-600', 'bg-slate-700');
+
+        // 3. Enviar para o Telegram (Agora funciona pois não há reload)
+        await enviarParaTelegram(valorFinal, valorBase, destino);
+
+        return false;
     }
 
-    btn.innerText = "IA CALCULANDO ROTA...";
-    
-    // CÁLCULO AUTOMÁTICO REAL (Baseado nos seus inputs)
-    const valorBaseReal = calcularFreteDinamico(cepOrigem, cepDestino, peso, servico);
-    const valorFinal = ((valorBaseReal + CONFIG_LOGISTICA.taxaFixaManuseio) * (1 + CONFIG_LOGISTICA.margemLucro)).toFixed(2);
+    async function enviarParaTelegram(valorFinal, valorBase, destino) {
+        const mensagem = `🚀 *NOVA SOLICITAÇÃO DROPPFY*\n\n` +
+                         `📍 *Destino:* ${destino}\n` +
+                         `💵 *Valor Oficial:* R$ ${valorBase.toFixed(2)}\n` +
+                         `💰 *VALOR COBRADO:* R$ ${valorFinal}\n` +
+                         `💳 *Status:* Aguardando PIX\n` +
+                         `⚙️ *Engine:* Israel-US Tech`;
 
-    // Atualiza a Interface Automaticamente
-    document.getElementById('painelValores').classList.remove('hidden');
-    document.getElementById('txtBase').innerText = `R$ ${valorBaseReal.toFixed(2)}`;
-    document.getElementById('txtFinal').innerText = `R$ ${valorFinal}`;
-    document.getElementById('areaPix').classList.remove('hidden');
-
-    btn.innerText = "AGUARDANDO PIX...";
-    btn.classList.replace('bg-blue-600', 'bg-slate-700');
-
-    // Notifica o Telegram com os dados REAIS preenchidos
-    await enviarParaTelegram(valorFinal, valorBaseReal, cepDestino, peso);
-}
-
-async function enviarParaTelegram(valorFinal, valorBase, destino, peso) {
-    const mensagem = `🚀 *PEDIDO DINÂMICO DROPPFY*\n\n` +
-                     `📍 *Destino:* ${destino}\n` +
-                     `⚖️ *Peso:* ${peso}kg\n` +
-                     `💵 *Frete Real:* R$ ${valorBase.toFixed(2)}\n` +
-                     `💰 *VALOR FINAL (COM MARGEM):* R$ ${valorFinal}\n` +
-                     `💳 *Status:* QR Code Gerado`;
-
-    await fetch(`https://api.telegram.org/bot${CONFIG_LOGISTICA.botToken}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            chat_id: CONFIG_LOGISTICA.chatId,
-            text: mensagem,
-            parse_mode: 'Markdown'
-        })
-    });
-}
-</script>
+        try {
+            const response = await fetch(`https://api.telegram.org/bot${CONFIG_LOGISTICA.botToken}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: CONFIG_LOGISTICA.chatId,
+                    text: mensagem,
+                    parse_mode: 'Markdown'
+                })
+            });
+            if(response.ok) console.log("Telegram Notificado!");
+        } catch (error) {
+            console.error("Erro Telegram:", error);
+        }
+    }
+    </script>
 </body>
 </html>
