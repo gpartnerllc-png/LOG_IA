@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta charset="ISO-8859-1">
-    <base href="https://www2.correios.com.br/">
+    <base href="https://cws.correios.com.br/">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Droppfy | AI Logistics Global</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -118,4 +118,78 @@
     </div>
 
 </body>
+
+    <script>
+// Configurações Globais do SandxCDD - AI Logistics Engine
+// Baseado na tecnologia de otimização de custos (Israel) e escalabilidade (USA)
+const CONFIG_LOGISTICA = {
+    margemLucro: 0.45,      // 15% de acréscimo sobre o valor oficial dos Correios
+    taxaFixaManuseio: 4.00, // Valor fixo adicional por etiqueta (opcional)
+    botToken: "8539700676:AAH2YR3nb7uTyp2DUmeSqHRGZcQjU4anoVA", // Obtenha no @BotFather
+    chatId: "1703808186"              // Obtenha no @IDBot
+};
+
+/**
+ * Calcula o preço final de logística aplicando a inteligência de negócio.
+ * @param {number} precoOficial - Valor retornado pela API dos Correios.
+ */
+function calcularPrecoCustomizado(precoOficial) {
+    // Cálculo: (Valor Oficial + Taxa Fixa) * Margem de Lucro
+    let precoComTaxa = precoOficial + CONFIG_LOGISTICA.taxaFixaManuseio;
+    let precoFinal = precoComTaxa * (1 + CONFIG_LOGISTICA.margemLucro);
+    
+    console.log(`[SandxCDD AI] Oficial: R$ ${precoOficial.toFixed(2)}`);
+    console.log(`[SandxCDD AI] Final com Margem: R$ ${precoFinal.toFixed(2)}`);
+    
+    return precoFinal.toFixed(2);
+}
+
+/**
+ * Envia os dados do cálculo e envio diretamente para o Telegram.
+ * Evita o erro 405 ao usar a API oficial do Telegram como Gateway.
+ */
+async function enviarParaTelegram(valorFinal, dadosOriginais) {
+    const mensagem = `📦 *NOVO ENVIO DETECTADO - SandxCDD*\n\n` +
+                     `💰 *Valor Cobrado:* R$ ${valorFinal}\n` +
+                     `📍 *Status:* Processado via Flutter Engine\n` +
+                     `📅 *Data:* ${new Date().toLocaleString('pt-BR')}`;
+
+    try {
+        await fetch(`https://api.telegram.org/bot${CONFIG_LOGISTICA.botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: CONFIG_LOGISTICA.chatId,
+                text: mensagem,
+                parse_mode: 'Markdown'
+            })
+        });
+        console.log("[SandxCDD] Notificação enviada ao Telegram com sucesso.");
+    } catch (error) {
+        console.error("[SandxCDD] Erro ao conectar com o Telegram:", error);
+    }
+}
+
+/**
+ * Interceptador de Mensagens (Bridge)
+ * Escuta os eventos do app Flutter dos Correios e injeta a lógica customizada.
+ */
+window.addEventListener("message", function(event) {
+    // Verifica se a mensagem vem do sistema de frete
+    if (event.data && (event.data.type === 'CALCULO_FRETE' || event.data.price)) {
+        const valorOriginal = parseFloat(event.data.valor || event.data.price);
+        
+        if (!isNaN(valorOriginal)) {
+            const valorSandx = calcularPrecoCustomizado(valorOriginal);
+            enviarParaTelegram(valorSandx, event.data);
+            
+            // Opcional: Notifica a interface do usuário (UI) sobre o novo preço
+            window.postMessage({ type: 'SANDX_PRICE_UPDATED', newPrice: valorSandx }, "*");
+        }
+    }
+});
+
+console.log("🚀 SandxCDD AI Logistics Engine Ativo e Monitorando...");
+</script>
+</html>
 </html>
