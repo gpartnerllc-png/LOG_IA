@@ -120,14 +120,18 @@
         </div>
     </div>
 <script>
-// CONFIGURAÇÕES DO SANDXCDD
 const CONFIG_LOGISTICA = {
-        margemLucro: 0.45,
-        taxaFixaManuseio: 4.00,
-        botToken: "8539700676:AAH2YR3nb7uTyp2DUmeSqHRGZcQjU4anoVA",
-        chatId: "1703808186"
+    // Dados que o seu sistema já lê:
+    margemLucro: 0.45,
+    taxaFixaManuseio: 4.00,
+    botToken: "8539700676:AAH2YR3nb7uTyp2DUmeSqHRGZcQjU4anoVA",
+    chatId: "1703808186",
+    
+    // Dados do PIX integrados (adicionados aqui):
+    chavePix: "pago@droppfy.com",
+    beneficiario: "Partner Mikale Rabelo",
+    cidade: "BRASIL"
 };
-
 // 1. RELÓGIO EM TEMPO REAL (Nunca para)
 function atualizarStatusTempo() {
     const agora = new Date();
