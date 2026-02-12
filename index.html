@@ -36,20 +36,52 @@
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="glass p-6 rounded-2xl ai-glow">
-                <h2 class="text-xl font-semibold mb-4 flex items-center">
-                    <span class="mr-2">📍</span> Destinação Automática
-                </h2>
-                <form id="formSandx" onsubmit="processarLogistica(event)">
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-[10px] text-slate-400 mb-1 uppercase tracking-wider">CEP de Origem</label>
-                            <input type="text" id="cepOrigem" name="cepOrigem" value="01001-000" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] text-slate-400 mb-1 uppercase tracking-wider">CEP de Destino</label>
-                            <input type="text" id="cepDestino" name="cepDestino" placeholder="00000-000" required class="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 outline-none">
-                        </div>
+           <div class="glass p-6 rounded-2xl ai-glow">
+    <h2 class="text-xl font-semibold mb-4 flex items-center">
+        <span class="mr-2">📍</span> Destinação Detalhada
+    </h2>
+    <form id="formSandx" onsubmit="processarLogistica(event)">
+        <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-[10px] text-slate-400 mb-1 uppercase">CEP Origem</label>
+                    <input type="text" id="cepOrigem" value="72915-484" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 outline-none text-sm">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-slate-400 mb-1 uppercase">CEP Destino</label>
+                    <input type="text" id="cepDestino" placeholder="00000-000" required class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 outline-none text-sm">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-[10px] text-slate-400 mb-1 uppercase">Nome Completo</label>
+                <input type="text" id="nomeCliente" placeholder="Quem recebe?" required class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 outline-none text-sm">
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-[10px] text-slate-400 mb-1 uppercase">Telefone / WhatsApp</label>
+                    <input type="text" id="telCliente" placeholder="(00) 00000-0000" required class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 outline-none text-sm">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-slate-400 mb-1 uppercase">Bairro</label>
+                    <input type="text" id="bairro" placeholder="Ex: Centro" required class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 outline-none text-sm">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-[10px] text-slate-400 mb-1 uppercase">Endereço Completo (Rua, Nº, Apto)</label>
+                <input type="text" id="endereco" placeholder="Rua das Flores, 123" required class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 outline-none text-sm">
+            </div>
+
+            <div>
+                <label class="block text-[10px] text-slate-400 mb-1 uppercase">Ponto de Proximidade / Referência</label>
+                <input type="text" id="referencia" placeholder="Perto do mercado..." class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 outline-none text-sm">
+            </div>
+            
+            <input type="hidden" id="servico" value="04014"> </div>
+    </form>
+</div>
                         <div>
                             <label class="block text-[10px] text-slate-400 mb-1 uppercase tracking-wider">Serviço Prioritário</label>
                             <select id="servico" name="servico" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 outline-none">
