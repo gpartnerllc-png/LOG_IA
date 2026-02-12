@@ -205,9 +205,7 @@
     if (tipoServico === "04014") { // Código para SEDEX
         adicionalServico = 27.77; // O SEDEX é sempre mais caro pela urgência
         // Você também pode usar um multiplicador: custoBase *= 1.75;
-        if (tipoServico === "04510") { // Código para SEDEX
-        adicionalServico = 15.88; // O Pac é sempre mais barato pela urgência
-        // Você também pode usar um multiplicador: custoBase *= 1.07;
+   
     } else { // Código para PAC (ou outros)
         adicionalServico = 0; // PAC é o preço base
     }
