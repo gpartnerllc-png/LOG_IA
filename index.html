@@ -141,31 +141,40 @@ function atualizarRelogio() {
 setInterval(atualizarRelogio, 1000);
 atualizarRelogio();
 
-function gerarPixCorreto(valorFinal) {
-    // Garante que o valor use ponto e tenha 2 casas decimais
-    const valorFormatado = parseFloat(valorFinal).toFixed(2); 
+function gerarPixSeguro(valor) {
+    // 1. Prepara o valor: Garante 2 casas decimais e usa PONTO (ex: 115.20)
+    const valorTxt = parseFloat(valor).toFixed(2);
+    const valorTamanho = valorTxt.length.toString().padStart(2, '0');
+
+    // 2. Montagem seguindo a risca o padrão do Banco Central
+    const campo26 = "0014br.gov.bcb.pix0116pago@droppfy.com";
     
-    // Calcula o tamanho do texto do valor (ex: "96.93" tem 5 caracteres)
-    const tamValor = valorFormatado.length.toString().padStart(2, '0');
-
-    const f = (id, conteudo) => `${id}${conteudo.length.toString().padStart(2, '0')}${conteudo}`;
-
-    // Montagem estruturada para o Banco Central
     let payload = "000201";
-    payload += f('26', f('00', 'br.gov.bcb.pix') + f('01', 'pago@droppfy.com'));
+    payload += "26" + campo26.length + campo26;
     payload += "52040000";
     payload += "5303986";
-    payload += `54${tamValor}${valorFormatado}`; // ID 54 com tamanho e valor exatos
+    payload += "54" + valorTamanho + valorTxt; // CAPTURA DE VALOR DINÂMICA
     payload += "5802BR";
-    payload += f('59', 'Partner');
-    payload += f('60', 'Aguas Lindas');
+    payload += "5907Partner";
+    payload += "6012Aguas Lindas";
     payload += "62070503***";
-    payload += "6304";
+    payload += "6304"; // Início do selo de segurança
 
-    // O CRC16 deve ser calculado sobre TODA a string acima
-    return payload + calcularCRC16(payload); 
+    // 3. Cálculo do CRC16 (O carimbo que valida o valor no banco)
+    function calcularCRC16(str) {
+        let crc = 0xFFFF;
+        for (let i = 0; i < str.length; i++) {
+            crc ^= str.charCodeAt(i) << 8;
+            for (let j = 0; j < 8; j++) {
+                if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021;
+                else crc <<= 1;
+            }
+        }
+        return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+    }
+
+    return payload + calcularCRC16(payload);
 }
-  
 // 3. FUNÇÃO DE CÁLCULO E PROCESSAMENTO (Unificada)
 async function processarLogistica(event) {
     event.preventDefault();
