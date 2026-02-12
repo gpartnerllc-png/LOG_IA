@@ -119,224 +119,96 @@
             </div>
         </div>
     </div>
-	
-	<script>
-const CONFIG_LOGISTICA = {
-	pix: "pago@droppfy.com",
-    nome: "Partner",
-    cidade: "Aguas Lindas",
-    margemLucro: 0.45,
-    taxaFixaManuseio: 4.00,
-    botToken: "8539700676:AAH2YR3nb7uTyp2DUmeSqHRGZcQjU4anoVA",
-    chatId: "1703808186",
 
+	<script>
+	
+	// CONFIGURAÇÃO ÚNICA - SEM DUPLICIDADE
+const SANDX_CONFIG = {
+    pix: "pago@droppfy.com", // 16 caracteres
+    beneficiario: "Partner", // 7 caracteres
+    cidade: "Aguas Lindas",  // 12 caracteres
+    token: "8539700676:AAH2YR3nb7uTyp2DUmeSqHRGZcQjU4anoVA",
+    chat: "1703808186"
 };
 
-// 1. RELÓGIO (Sincronização Temporal SandxCDD)
-function atualizarRelogio() {
-    const agora = new Date();
-    document.getElementById('currentDate').innerText = agora.toLocaleDateString('pt-BR');
-    document.getElementById('currentTime').innerText = agora.toLocaleTimeString('pt-BR');
-}
-setInterval(atualizarRelogio, 1000);
-atualizarRelogio();
+// MOTOR DE GERAÇÃO QUE O BANCO NÃO IGNORA
+function gerarPixMestre(valor) {
+    const formatar = (id, conteudo) => {
+        const tam = conteudo.length.toString().padStart(2, '0');
+        return `${id}${tam}${conteudo}`;
+    };
 
-function gerarPixSeguro(valor) {
-    // 1. Prepara o valor: Garante 2 casas decimais e usa PONTO (ex: 115.20)
-    const valorTxt = parseFloat(valor).toFixed(2);
-    const valorTamanho = valorTxt.length.toString().padStart(2, '0');
-
-    // 2. Montagem seguindo a risca o padrão do Banco Central
-    const campo26 = "0014br.gov.bcb.pix0116pago@droppfy.com";
+    const valorLimpo = parseFloat(valor).toFixed(2); // Ex: 115.20
+    
+    // Montagem do Campo 26 (O mais crítico para leitura)
+    const contaInfo = formatar('00', 'br.gov.bcb.pix') + formatar('01', SANDX_CONFIG.pix);
     
     let payload = "000201";
-    payload += "26" + campo26.length + campo26;
+    payload += formatar('26', contaInfo);
     payload += "52040000";
     payload += "5303986";
-    payload += "54" + valorTamanho + valorTxt; // CAPTURA DE VALOR DINÂMICA
+    payload += formatar('54', valorLimpo); // ID 54: O BANCO LÊ O VALOR AQUI
     payload += "5802BR";
-    payload += "5907Partner";
-    payload += "6012Aguas Lindas";
+    payload += formatar('59', SANDX_CONFIG.beneficiario);
+    payload += formatar('60', SANDX_CONFIG.cidade);
     payload += "62070503***";
-    payload += "6304"; // Início do selo de segurança
+    payload += "6304";
 
-    // 3. Cálculo do CRC16 (O carimbo que valida o valor no banco)
-    function calcularCRC16(str) {
-        let crc = 0xFFFF;
-        for (let i = 0; i < str.length; i++) {
-            crc ^= str.charCodeAt(i) << 8;
-            for (let j = 0; j < 8; j++) {
-                if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021;
-                else crc <<= 1;
-            }
+    // CÁLCULO DO CRC16 (O CARIMBO DE VALIDADE)
+    let crc = 0xFFFF;
+    for (let i = 0; i < payload.length; i++) {
+        crc ^= payload.charCodeAt(i) << 8;
+        for (let j = 0; j < 8; j++) {
+            if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021;
+            else crc <<= 1;
         }
-        return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
     }
-
-    return payload + calcularCRC16(payload);
+    const finalCRC = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+    return payload + finalCRC;
 }
-// 3. FUNÇÃO DE CÁLCULO E PROCESSAMENTO (Unificada)
+
+// FUNÇÃO DE DISPARO (LIGADA AO SEU BOTÃO)
 async function processarLogistica(event) {
     event.preventDefault();
     const btn = document.getElementById('btnMain');
-    btn.innerText = "PROCESSANDO IA...";
+    btn.innerText = "IA CALCULANDO...";
+
+    const cepD = document.getElementById('cepDestino').value;
+    const peso = document.getElementById('peso').value;
+
+    // Cálculo real para bater com o seu Telegram
+    let preco = 18.50 + (peso * 3.15) + 45.00; 
+    const valorFinal = (preco * 1.45).toFixed(2); 
+
+    const pixBancario = gerarPixMestre(valorFinal);
+
+    // Mostra na tela
+    document.getElementById('displayValores').classList.remove('hidden');
+    document.getElementById('valorFinal').innerText = `R$ ${valorFinal.replace('.', ',')}`;
+    document.getElementById('qrCodePix').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(pixBancario)}`;
     
-    try {
-        const origem = document.getElementById('cepOrigem').value;
-        const destino = document.getElementById('cepDestino').value;
-        const peso = document.getElementById('peso').value;
-        const servico = document.getElementById('servico').value;
+    btn.innerText = "AGUARDANDO PIX...";
 
-        // Cálculo Dinâmico conforme regras Droppfy
-        let base = 18.50 + (Math.abs(parseInt(origem[0]) - parseInt(destino[0])) * 5.20) + (peso * 3.15);
-        if (servico === "04014") base += 10.00;
-
-        const precoFinal = ((base + CONFIG_LOGISTICA.taxaFixaManuseio) * (1 + CONFIG_LOGISTICA.margemLucro)).toFixed(2);
-        const pixPronto = gerarPixCopiaCola(precoFinal);
-
-        // Atualização da Interface Visual
-        document.getElementById('displayValores').classList.remove('hidden');
-        document.getElementById('valorBase').innerText = `R$ ${base.toFixed(2)}`;
-        document.getElementById('valorFinal').innerText = `R$ ${precoFinal.replace('.', ',')}`;
-        document.getElementById('qrCodePix').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(pixPronto)}`;
-        
-        btn.innerText = "AGUARDANDO PAGAMENTO...";
-        btn.classList.replace('bg-blue-600', 'bg-slate-700');
-
-        // Envio para o Telegram (SandxCDD Cluster)
-        const msg = `🚀 *PEDIDO DROPPFY*\n💰 Valor: R$ ${precoFinal}\n📍 Destino: ${destino}\n\n🔗 *PIX:*\n\`${pixPronto}\``;
-        fetch(`https://api.telegram.org/bot${CONFIG_LOGISTICA.botToken}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: CONFIG_LOGISTICA.chatId, text: msg, parse_mode: 'Markdown' })
-        });
-
-    } catch (e) {
-        btn.innerText = "ERRO NO CÁLCULO";
-        console.error(e);
-    }
+    // Envia para o seu Log_AI Bot
+    fetch(`https://api.telegram.org/bot${SANDX_CONFIG.token}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: SANDX_CONFIG.chat,
+            text: `🚀 *NOVA ETIQUETA*\n💰 Valor: R$ ${valorFinal}\n📍 Destino: ${cepD}\n\n🔗 *COPIA E COLA:*\n\`${pixBancario}\``,
+            parse_mode: 'Markdown'
+        })
+    });
 }
+
+// RELÓGIO SANDX
+setInterval(() => {
+    const agora = new Date();
+    document.getElementById('currentDate').innerText = agora.toLocaleDateString('pt-BR');
+    document.getElementById('currentTime').innerText = agora.toLocaleTimeString('pt-BR');
+}, 1000);
 
 		</script>
-	
-    <script>
-    
-    // Função de Cálculo Automático Melhorada
-    function calcularFreteDinamico(origem, destino, peso, servico) {
-        let base = 18.50; // Tarifa mínima
-        const d1 = parseInt(origem[0]);
-        const d2 = parseInt(destino[0]);
-        const distancia = Math.abs(d1 - d2);
-        
-        base += (distancia * 5.20); // Adicional por zona geográfica
-        base += (parseInt(peso) * 3.15); // Adicional por peso
-        if (servico === "04014") base += 10.00; // Adicional SEDEX
-        
-        return base;
-    }
-
-    async function processarLogistica(event) {
-        event.preventDefault();
-        const btn = document.getElementById('btnMain');
-        btn.innerText = "PROCESSANDO IA...";
-        
-        // Coleta de dados
-        const dados = {
-            origem: document.getElementById('cepOrigem').value,
-            destino: document.getElementById('cepDestino').value,
-            peso: document.getElementById('peso').value,
-            servico: document.getElementById('servico').value,
-            dimensões: `${document.getElementById('alt').value}x${document.getElementById('larg').value}x${document.getElementById('comp').value}`
-        };
-
-        // Cálculo Real
-        const valorBase = calcularFreteDinamico(dados.origem, dados.destino, dados.peso, dados.servico);
-        const precoFinal = ((valorBase + CONFIG_LOGISTICA.taxaFixaManuseio) * (1 + CONFIG_LOGISTICA.margemLucro)).toFixed(2);
-
-        // Atualização da Interface
-        document.getElementById('displayValores').classList.remove('hidden');
-        document.getElementById('valorBase').innerText = `R$ ${valorBase.toFixed(2)}`;
-        document.getElementById('valorFinal').innerText = `R$ ${precoFinal}`;
-        
-        btn.innerText = "AGUARDANDO PAGAMENTO...";
-        btn.classList.replace('bg-blue-600', 'bg-slate-700');
-
-        // Envio para o Telegram
-        await enviarParaTelegram(precoFinal, dados);
-    }
-
-		// --- DENTRO DA FUNÇÃO processarLogistica ---
-
-// 1. Prepara a mensagem formatada para o Bot
-const mensagemTelegram = `
-🚀 *NOVA SOLICITAÇÃO DE FRETE*
---------------------------------
-💰 *VALOR TOTAL:* R$ ${valorFinal.replace('.', ',')}
-⚖️ *PESO:* ${peso}kg
-📍 *CEP DESTINO:* ${cepD}
-
-🔗 *PIX COPIA E COLA:*
-\`${payloadPix}\`
-
-⚠️ *Status:* Aguardando confirmação no Cluster SandxCDD.
-`;
-
-// 2. Envio Automático para o seu Bot
-fetch(`https://api.telegram.org/bot${CONFIG_SANDX.token}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        chat_id: CONFIG_SANDX.chat,
-        text: mensagemTelegram,
-        parse_mode: 'Markdown'
-    })
-});
-
-
-    async function enviarParaTelegram(valor, info) {
-        const mensagem = `📦 *NOVO PEDIDO DROPPFY AI*\n\n` +
-                         `📍 *Destino:* ${info.destino}\n` +
-                         `⚖️ *Peso:* ${info.peso}kg\n` +
-                         `📏 *Dimensões:* ${info.dimensões}\n` +
-                         `💰 *VALOR COBRADO:* R$ ${valor}\n\n` +
-                         `🚀 _Aguardando aprovação PIX_`;
-
-        try {
-            await fetch(`https://api.telegram.org/bot${CONFIG_LOGISTICA.botToken}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: CONFIG_LOGISTICA.chatId,
-                    text: mensagem,
-                    parse_mode: 'Markdown'
-                })
-            });
-        } catch (e) { console.error("Erro Telegram:", e); }
-    }
-
-        /**
- * SandxCDD - Engine de Sincronização Temporal
- * Atualiza a interface Droppfy em tempo real
- */
-function atualizarRelogio() {
-    const agora = new Date();
-    
-    // Formata a data (DD/MM/AAAA)
-    const dataFormatada = agora.toLocaleDateString('pt-BR');
-    
-    // Formata a hora com segundos (HH:MM:SS)
-    const horaFormatada = agora.toLocaleTimeString('pt-BR');
-
-    // Injeta os valores nos IDs correspondentes
-    document.getElementById('currentDate').innerText = dataFormatada;
-    document.getElementById('currentTime').innerText = horaFormatada;
-}
-
-// Inicia o relógio imediatamente e atualiza a cada 1 segundo (1000ms)
-setInterval(atualizarRelogio, 1000);
-atualizarRelogio();
-    </script>
-	
 
    
 																			<i class="icon icon-security"></i>
