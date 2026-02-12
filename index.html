@@ -154,39 +154,34 @@
 
 	<script>
 	
-	// CONFIGURAÇÃO ÚNICA - SEM DUPLICIDADE
+	// 1. CONFIGURAÇÕES GLOBAIS SANDXCDD
 const SANDX_CONFIG = {
-    pix: "pago@droppfy.com", // 16 caracteres
-    beneficiario: "Partner", // 7 caracteres
-    cidade: "Aguas Lindas",  // 12 caracteres
+    pix: "pago@droppfy.com",
+    beneficiario: "Partner",
+    cidade: "Aguas Lindas",
     token: "8539700676:AAH2YR3nb7uTyp2DUmeSqHRGZcQjU4anoVA",
     chat: "1703808186"
 };
 
-// MOTOR DE GERAÇÃO QUE O BANCO NÃO IGNORA
+// 2. MOTOR DE GERAÇÃO PIX (Sincronizado com os Bancos)
 function gerarPixMestre(valor) {
     const formatar = (id, conteudo) => {
         const tam = conteudo.length.toString().padStart(2, '0');
         return `${id}${tam}${conteudo}`;
     };
 
-    const valorLimpo = parseFloat(valor).toFixed(2); // Ex: 115.20
-    
-    // Montagem do Campo 26 (O mais crítico para leitura)
+    const valorLimpo = parseFloat(valor).toFixed(2);
     const contaInfo = formatar('00', 'br.gov.bcb.pix') + formatar('01', SANDX_CONFIG.pix);
     
     let payload = "000201";
     payload += formatar('26', contaInfo);
-    payload += "52040000";
-    payload += "5303986";
-    payload += formatar('54', valorLimpo); // ID 54: O BANCO LÊ O VALOR AQUI
+    payload += "520400005303986";
+    payload += formatar('54', valorLimpo); // Campo que o banco lê o valor
     payload += "5802BR";
     payload += formatar('59', SANDX_CONFIG.beneficiario);
     payload += formatar('60', SANDX_CONFIG.cidade);
-    payload += "62070503***";
-    payload += "6304";
+    payload += "62070503***6304";
 
-    // CÁLCULO DO CRC16 (O CARIMBO DE VALIDADE)
     let crc = 0xFFFF;
     for (let i = 0; i < payload.length; i++) {
         crc ^= payload.charCodeAt(i) << 8;
@@ -195,77 +190,90 @@ function gerarPixMestre(valor) {
             else crc <<= 1;
         }
     }
-    const finalCRC = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
-    return payload + finalCRC;
+    return payload + (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
 }
 
+// 3. FUNÇÃO PRINCIPAL DE LOGÍSTICA
 async function processarLogistica(event) {
     event.preventDefault();
     const btn = document.getElementById('btnMain');
-    btn.innerText = "IA CALCULANDO DISTÂNCIA...";
+    btn.innerText = "IA PROCESSANDO DADOS...";
 
-    // 1. CAPTURA DE DADOS COMPLETA
-    const cepO = document.getElementById('cepOrigem').value.replace(/\D/g, '');
-    const cepD = document.getElementById('cepDestino').value.replace(/\D/g, '');
-    const peso = parseFloat(document.getElementById('peso').value);
-    const alt = parseFloat(document.getElementById('alt').value) || 0;
-    const larg = parseFloat(document.getElementById('larg').value) || 0;
-    const comp = parseFloat(document.getElementById('comp').value) || 0;
-    const servico = document.getElementById('servico').value;
+    // Coleta de dados completa
+    const dados = {
+        nome: document.getElementById('nomeCliente').value,
+        doc: document.getElementById('docCliente').value,
+        telefone: document.getElementById('telCliente').value,
+        cepO: document.getElementById('cepOrigem').value.replace(/\D/g, ''),
+        cepD: document.getElementById('cepDestino').value.replace(/\D/g, ''),
+        bairro: document.getElementById('bairro').value,
+        endereco: document.getElementById('endereco').value,
+        referencia: document.getElementById('referencia').value,
+        peso: parseFloat(document.getElementById('peso').value) || 0,
+        alt: parseFloat(document.getElementById('alt').value) || 20,
+        larg: parseFloat(document.getElementById('larg').value) || 20,
+        comp: parseFloat(document.getElementById('comp').value) || 20
+    };
 
-    // 2. MOTOR LOGÍSTICO SANDXCDD
-    let custoBase = 18.50; 
-    
-    // Cálculo por Distância (Diferença entre regiões do Brasil)
-    const zonaOrigem = parseInt(cepO[0]);
-    const zonaDestino = parseInt(cepD[0]);
-    const distanciaKm = Math.abs(zonaOrigem - zonaDestino);
-    custoBase += (distanciaKm * 5.20); 
+    // Cálculo Logístico SandxCDD
+    let custoBase = 18.50;
+    const zonaO = parseInt(dados.cepO[0]);
+    const zonaD = parseInt(dados.cepD[0]);
+    custoBase += (Math.abs(zonaO - zonaD) * 5.20); // Distância Regional
+    custoBase += (dados.peso * 3.15); // Peso Físico
+    custoBase += ((dados.alt * dados.larg * dados.comp) / 6000) * 2.10; // Volume
 
-    // Cálculo por Peso
-    custoBase += (peso * 3.15); 
-
-    // Cálculo por Volume (Dimensões)
-    const volume = (alt * larg * comp) / 6000; // Peso cubado padrão
-    custoBase += (volume * 2.10);
-
-    // Adicional de Serviço (SEDEX)
-    if (servico === "04014") custoBase += 12.00;
-
-    // Margem Droppfy + Taxa de Manuseio
-    const valorFinal = ((custoBase + 4.00) * 1.45).toFixed(2); 
-
-    // 3. GERAÇÃO DO PIX BANCÁRIO (O que o banco lê)
+    const valorFinal = ((custoBase + 4.00) * 1.45).toFixed(2);
     const pixBancario = gerarPixMestre(valorFinal);
 
-    // 4. ATUALIZAÇÃO DA TELA
+    // Atualização Visual
     document.getElementById('displayValores').classList.remove('hidden');
-    document.getElementById('valorBase').innerText = `R$ ${custoBase.toFixed(2).replace('.', ',')}`;
     document.getElementById('valorFinal').innerText = `R$ ${valorFinal.replace('.', ',')}`;
     document.getElementById('qrCodePix').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(pixBancario)}`;
+    document.getElementById('areaImpressao').classList.remove('hidden'); // Mostra botão de imprimir
     
     btn.innerText = "AGUARDANDO PAGAMENTO...";
 
-    // 5. ENVIO PARA TELEGRAM COM DETALHES LOGÍSTICOS
-    const msg = `🚀 *NOVA LOGÍSTICA DROPPFY*\n` +
-                `💰 VALOR: R$ ${valorFinal}\n` +
-                `📍 DESTINO: ${cepD}\n` +
-                `⚖️ PESO: ${peso}kg\n` +
-                `📏 DIMENSÕES: ${alt}x${larg}x${comp}\n\n` +
-                `🔗 *PIX COPIA E COLA:*\n\`${pixBancario}\``;
+    // Envio para Telegram
+    const relatorio = `📦 *PEDIDO SANDXCDD*\n👤 *CLIENTE:* ${dados.nome}\n📄 *DOC:* ${dados.doc}\n📞 *TEL:* ${dados.telefone}\n📍 *CEP:* ${dados.cepD}\n⚖️ *PESO:* ${dados.peso}kg\n💰 *VALOR:* R$ ${valorFinal}\n\n🔗 *PIX:*\n\`${pixBancario}\``;
 
     fetch(`https://api.telegram.org/bot${SANDX_CONFIG.token}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            chat_id: SANDX_CONFIG.chat,
-            text: msg,
-            parse_mode: 'Markdown'
-        })
+        body: JSON.stringify({ chat_id: SANDX_CONFIG.chat, text: relatorio, parse_mode: 'Markdown' })
     });
 }
 
-// RELÓGIO SANDX
+// 4. FUNÇÃO DE IMPRESSÃO (Nota Fiscal / Declaração)
+function gerarNotaFiscal() {
+    const info = {
+        nome: document.getElementById('nomeCliente').value,
+        doc: document.getElementById('docCliente').value,
+        end: document.getElementById('endereco').value,
+        bairro: document.getElementById('bairro').value,
+        cep: document.getElementById('cepDestino').value,
+        peso: document.getElementById('peso').value,
+        valor: document.getElementById('valorFinal').innerText
+    };
+
+    const janelaPrint = window.open('', '', 'width=800,height=600');
+    janelaPrint.document.write(`
+        <div style="font-family:sans-serif; border:2px solid #000; padding:20px; width:500px; margin:auto;">
+            <h2 style="text-align:center;">DECLARAÇÃO DE CONTEÚDO</h2>
+            <hr>
+            <p><strong>DESTINATÁRIO:</strong> ${info.nome}</p>
+            <p><strong>DOC:</strong> ${info.doc}</p>
+            <p><strong>ENDEREÇO:</strong> ${info.end}, ${info.bairro}</p>
+            <p><strong>CEP:</strong> ${info.cep}</p>
+            <p><strong>VALOR DECLARADO:</strong> ${info.valor}</p>
+            <p style="font-size:10px; text-align:center; margin-top:30px;">SandxCDD Cluster Global - Integrado ao Sistema Droppfy</p>
+        </div>
+        <script>window.print();
+    `);
+    janelaPrint.document.close();
+}
+
+// RELÓGIO ATIVO
 setInterval(() => {
     const agora = new Date();
     document.getElementById('currentDate').innerText = agora.toLocaleDateString('pt-BR');
