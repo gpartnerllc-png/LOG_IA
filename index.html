@@ -209,9 +209,8 @@
     } else { // Código para PAC (ou outros)
         adicionalServico = 0; // PAC é o preço base
     }
-       // A SOMA CORRETA: (Base * Urgência) + Taxa Fixa + Taxa Operacional
-        const custoProcessado = (custoBase * multiplicadorUrgencia) + taxaFixaServico + 4.00;
-        const valorFinal = (custoBase * 1.45).toFixed(2);
+        const valorFinal = (// A SOMA CORRETA: (Base * Urgência) + Taxa Fixa + Taxa Operacional
+    const custoProcessado = (custoBase * multiplicadorUrgencia) + taxaFixaServico + 4.00; * 1.45).toFixed(2);
         const pix = gerarPixMestre(valorFinal);
 
         document.getElementById('displayValores').classList.remove('hidden');
