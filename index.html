@@ -126,44 +126,12 @@ const CONFIG_LOGISTICA = {
     taxaFixaManuseio: 4.00,
     botToken: "8539700676:AAH2YR3nb7uTyp2DUmeSqHRGZcQjU4anoVA",
     chatId: "1703808186",
+    chavePix: "pago@droppfy.com",
+    beneficiario: "Partner",
+    cidade: "Aguas Lindas"
 };
 
-// 1. MOTOR DE GERAÇÃO PIX (BRCODE) 
-function gerarPixCopiaCola(valor) {
-    const f = (id, conteudo) => `${id}${conteudo.length.toString().padStart(2, '0')}${conteudo}`;
-    
-    const conta = f('00', 'br.gov.bcb.pix') + f('01', CONFIG_LOGISTICA.chavePix);
-    
-    let payload = 
-        f('00', '01') + 
-        f('26', conta) + 
-        f('52', '0000') + 
-        f('53', '986') + 
-        f('54', valor) + 
-        f('58', 'BR') + 
-        f('59', CONFIG_LOGISTICA.beneficiario) + 
-        f('60', CONFIG_LOGISTICA.cidade) + 
-        f('62', f('05', '***')) + 
-        '6304';
-
-    let crc = 0xFFFF;
-    for (let i = 0; i < payload.length; i++) {
-        crc ^= payload.charCodeAt(i) << 8;
-        for (let j = 0; j < 8; j++) {
-            if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021;
-            else crc <<= 1;
-        }
-    }
-    return payload + (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
-}
-
-const payloadPixVálido = payload + getCRC16(payload);
-
-// 5. Agora sim, gera o QR Code e manda pro Telegram
-document.getElementById('qrCodePix').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(payloadPixVálido)}`;
-};
-
-// 1. RELÓGIO (Sincronização Temporal)
+// 1. RELÓGIO (Sincronização Temporal SandxCDD)
 function atualizarRelogio() {
     const agora = new Date();
     document.getElementById('currentDate').innerText = agora.toLocaleDateString('pt-BR');
@@ -172,26 +140,15 @@ function atualizarRelogio() {
 setInterval(atualizarRelogio, 1000);
 atualizarRelogio();
 
-// 2. MOTOR DE GERAÇÃO PIX (BRCODE) - O que faz o banco ler
+// 2. MOTOR DE GERAÇÃO PIX (BRCode Oficial para o Banco Ler)
 function gerarPixCopiaCola(valor) {
     const f = (id, conteudo) => `${id}${conteudo.length.toString().padStart(2, '0')}${conteudo}`;
-    
-    // Montagem do destino (ID 26) conforme seus exemplos
     const conta = f('00', 'br.gov.bcb.pix') + f('01', CONFIG_LOGISTICA.chavePix);
     
-    let payload = 
-        f('00', '01') + 
-        f('26', conta) + 
-        f('52', '0000') + 
-        f('53', '986') + 
-        f('54', valor) + // Valor com ponto
-        f('58', 'BR') + 
-        f('59', CONFIG_LOGISTICA.beneficiario) + 
-        f('60', CONFIG_LOGISTICA.cidade) + 
-        f('62', f('05', '***')) + 
-        '6304';
+    let payload = f('00', '01') + f('26', conta) + f('52', '0000') + f('53', '986') + 
+                  f('54', valor) + f('58', 'BR') + f('59', CONFIG_LOGISTICA.beneficiario) + 
+                  f('60', CONFIG_LOGISTICA.cidade) + f('62', f('05', '***')) + '6304';
 
-    // Cálculo do CRC16 (Assinatura Bancária)
     let crc = 0xFFFF;
     for (let i = 0; i < payload.length; i++) {
         crc ^= payload.charCodeAt(i) << 8;
@@ -203,49 +160,45 @@ function gerarPixCopiaCola(valor) {
     return payload + (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
 }
 
-// 3. FUNÇÃO PRINCIPAL DE PROCESSAMENTO
+// 3. FUNÇÃO DE CÁLCULO E PROCESSAMENTO (Unificada)
 async function processarLogistica(event) {
     event.preventDefault();
     const btn = document.getElementById('btnMain');
     btn.innerText = "PROCESSANDO IA...";
-
+    
     try {
+        const origem = document.getElementById('cepOrigem').value;
         const destino = document.getElementById('cepDestino').value;
         const peso = document.getElementById('peso').value;
-        const origem = document.getElementById('cepOrigem').value;
+        const servico = document.getElementById('servico').value;
 
-        // Cálculo do Frete
+        // Cálculo Dinâmico conforme regras Droppfy
         let base = 18.50 + (Math.abs(parseInt(origem[0]) - parseInt(destino[0])) * 5.20) + (peso * 3.15);
-        const precoFinal = ((base + CONFIG_LOGISTICA.taxaFixaManuseio) * (1 + CONFIG_LOGISTICA.margemLucro)).toFixed(2);
+        if (servico === "04014") base += 10.00;
 
-        // Gera o Pix que funciona no banco
+        const precoFinal = ((base + CONFIG_LOGISTICA.taxaFixaManuseio) * (1 + CONFIG_LOGISTICA.margemLucro)).toFixed(2);
         const pixPronto = gerarPixCopiaCola(precoFinal);
 
-        // Atualiza Interface
+        // Atualização da Interface Visual
+        document.getElementById('displayValores').classList.remove('hidden');
         document.getElementById('valorBase').innerText = `R$ ${base.toFixed(2)}`;
         document.getElementById('valorFinal').innerText = `R$ ${precoFinal.replace('.', ',')}`;
         document.getElementById('qrCodePix').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(pixPronto)}`;
-        document.getElementById('displayValores').classList.remove('hidden');
-
+        
         btn.innerText = "AGUARDANDO PAGAMENTO...";
         btn.classList.replace('bg-blue-600', 'bg-slate-700');
 
-        // 4. ENVIO PARA TELEGRAM (Copia e Cola Ativo)
-        const mensagem = `📦 *NOVA ETIQUETA*\n💰 Valor: R$ ${precoFinal.replace('.', ',')}\n📍 Destino: ${destino}\n\n🔗 *COPIA E COLA:*\n\`${pixPronto}\``;
-
+        // Envio para o Telegram (SandxCDD Cluster)
+        const msg = `🚀 *PEDIDO DROPPFY*\n💰 Valor: R$ ${precoFinal}\n📍 Destino: ${destino}\n\n🔗 *PIX:*\n\`${pixPronto}\``;
         fetch(`https://api.telegram.org/bot${CONFIG_LOGISTICA.botToken}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: CONFIG_LOGISTICA.chatId,
-                text: mensagem,
-                parse_mode: 'Markdown'
-            })
+            body: JSON.stringify({ chat_id: CONFIG_LOGISTICA.chatId, text: msg, parse_mode: 'Markdown' })
         });
 
     } catch (e) {
-        console.error(e);
         btn.innerText = "ERRO NO CÁLCULO";
+        console.error(e);
     }
 }
 
