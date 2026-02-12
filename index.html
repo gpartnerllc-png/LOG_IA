@@ -93,8 +93,8 @@
             <div class="glass p-6 rounded-2xl border-l-4 border-blue-500 flex flex-col justify-between">
                 <div>
                     <h2 class="text-xl font-semibold mb-4">⚡ Painel de Checkout</h2>
-                    <div id="painelCheckout" class="hidden animate-pulse">
-                    <div id="painelCheckout" class="hidden opacity-0 transition-opacity duration-500">
+                    <div id="displayValores" class="hidden space-y-3 mb-6 border-t border-slate-700 pt-4 transition-all duration-500">
+    <div class="flex justify-between text-xs text-slate-400">
                             <span>Custo Base:</span>
                             <span id="valorBase">R$ 0,00</span>
                         </div>
@@ -119,6 +119,21 @@
             </div>
         </div>
     </div>
+
+	 <script>
+
+	// Substitua pela sua chave PIX (CPF, E-mail ou Chave Aleatória)
+const minhaChavePix = "pago@droppfy.com"; 
+const nomeBeneficiario = "Partner Mikale Rabelo Do Nascimento";
+const cidade = "Brasil";
+
+// Gera o link padrão para o QR Code (Formato simplificado)
+// Nota: Para PIX Copia e Cola real, o ideal é usar uma biblioteca de payload, 
+// mas para o QR Code visual de cobrança rápida, você pode usar este formato:
+const payloadPix = `00020101021126580014br.gov.bcb.pix0114${minhaChavePix}520400005303986540${valorFinal}5802BR59${nomeBeneficiario.length}${nomeBeneficiario}6009${cidade}62070503***6304`;
+
+// Atualiza a imagem do QR Code na tela
+document.getElementById('qrCodePix').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(payloadPix)}`;
 	
 
     <script>
