@@ -119,82 +119,105 @@
             </div>
         </div>
     </div>
-<script>
+	
+	<script>
 const CONFIG_LOGISTICA = {
-    // Dados que o seu sistema já lê:
     margemLucro: 0.45,
     taxaFixaManuseio: 4.00,
     botToken: "8539700676:AAH2YR3nb7uTyp2DUmeSqHRGZcQjU4anoVA",
     chatId: "1703808186",
-    
-    // Dados do PIX integrados (adicionados aqui):
     chavePix: "pago@droppfy.com",
-    beneficiario: "Partner Mikale Rabelo",
-    cidade: "BRASIL"
+    beneficiario: "Partner",
+    cidade: "Aguas Lindas"
 };
-// 1. RELÓGIO EM TEMPO REAL (Nunca para)
-function atualizarStatusTempo() {
-    const agora = new Date();
-    const data = agora.toLocaleDateString('pt-BR');
-    const hora = agora.toLocaleTimeString('pt-BR');
-    
-    // Procura os IDs que criamos no header
-    if(document.getElementById('currentDate')) document.getElementById('currentDate').innerText = data;
-    if(document.getElementById('currentTime')) document.getElementById('currentTime').innerText = hora;
-}
-setInterval(atualizarStatusTempo, 1000);
-atualizarStatusTempo();
 
-// 2. FUNÇÃO PRINCIPAL DE LOGÍSTICA
+// 1. RELÓGIO (Sincronização Temporal)
+function atualizarRelogio() {
+    const agora = new Date();
+    document.getElementById('currentDate').innerText = agora.toLocaleDateString('pt-BR');
+    document.getElementById('currentTime').innerText = agora.toLocaleTimeString('pt-BR');
+}
+setInterval(atualizarRelogio, 1000);
+atualizarRelogio();
+
+// 2. MOTOR DE GERAÇÃO PIX (BRCODE) - O que faz o banco ler
+function gerarPixCopiaCola(valor) {
+    const f = (id, conteudo) => `${id}${conteudo.length.toString().padStart(2, '0')}${conteudo}`;
+    
+    // Montagem do destino (ID 26) conforme seus exemplos
+    const conta = f('00', 'br.gov.bcb.pix') + f('01', CONFIG_LOGISTICA.chavePix);
+    
+    let payload = 
+        f('00', '01') + 
+        f('26', conta) + 
+        f('52', '0000') + 
+        f('53', '986') + 
+        f('54', valor) + // Valor com ponto
+        f('58', 'BR') + 
+        f('59', CONFIG_LOGISTICA.beneficiario) + 
+        f('60', CONFIG_LOGISTICA.cidade) + 
+        f('62', f('05', '***')) + 
+        '6304';
+
+    // Cálculo do CRC16 (Assinatura Bancária)
+    let crc = 0xFFFF;
+    for (let i = 0; i < payload.length; i++) {
+        crc ^= payload.charCodeAt(i) << 8;
+        for (let j = 0; j < 8; j++) {
+            if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021;
+            else crc <<= 1;
+        }
+    }
+    return payload + (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+}
+
+// 3. FUNÇÃO PRINCIPAL DE PROCESSAMENTO
 async function processarLogistica(event) {
     event.preventDefault();
-    
+    const btn = document.getElementById('btnMain');
+    btn.innerText = "PROCESSANDO IA...";
+
     try {
-        // Captura de valores dos inputs
-        const peso = parseFloat(document.querySelector('select[name="peso"]').value) || 1;
-        const cepD = document.querySelector('input[name="cepDestino"]').value;
+        const destino = document.getElementById('cepDestino').value;
+        const peso = document.getElementById('peso').value;
+        const origem = document.getElementById('cepOrigem').value;
 
-        // CÁLCULO AUTOMÁTICO
-        const baseCalculada = 18.50 + (peso * 2.50); 
-        const valorFinalNum = ((baseCalculada + CONFIG_SANDX.taxaFixa) * (1 + CONFIG_SANDX.margem)).toFixed(2);
+        // Cálculo do Frete
+        let base = 18.50 + (Math.abs(parseInt(origem[0]) - parseInt(destino[0])) * 5.20) + (peso * 3.15);
+        const precoFinal = ((base + CONFIG_LOGISTICA.taxaFixaManuseio) * (1 + CONFIG_LOGISTICA.margemLucro)).toFixed(2);
 
-        // FORMATAÇÃO DO PIX (Dentro da função para não travar)
-        const nome = CONFIG_SANDX.beneficiario;
-		// Montagem do Payload Principal
-    let payload = 
-        f('00', '01') +             // Versão do protocolo
-        f('26', infoConta) +        // Dados da Chave Pix (E-mail)
-        f('52', '0000') +           // Categoria
-        f('53', '986') +            // Moeda BRL
-        f('54', valor) +            // VALOR DINÂMICO (Ex: 100.70)
-        f('58', 'BR') +             // País
-        f('59', beneficiario) +     // Nome que aparece no Banco
-        f('60', cidade) +           // Cidade que aparece no Banco
-        f('62', f('05', '***')) +   // Campo fixo
-        '6304';                     // Início do Checksum (CRC)
-       
-        // ATUALIZAÇÃO DA TELA
-        document.getElementById('valorBase').innerText = `R$ ${baseCalculada.toFixed(2)}`;
-        document.getElementById('valorFinalVisual').innerText = `R$ ${valorFinalNum.replace('.', ',')}`;
-        
-        // Gera o QR Code com os dados processados
-        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(payloadPix)}`;
-        document.getElementById('qrCodePix').src = qrUrl;
+        // Gera o Pix que funciona no banco
+        const pixPronto = gerarPixCopiaCola(precoFinal);
 
-        // Mostra o painel (Sem piscar)
+        // Atualiza Interface
+        document.getElementById('valorBase').innerText = `R$ ${base.toFixed(2)}`;
+        document.getElementById('valorFinal').innerText = `R$ ${precoFinal.replace('.', ',')}`;
+        document.getElementById('qrCodePix').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(pixPronto)}`;
         document.getElementById('displayValores').classList.remove('hidden');
-        
-        const btn = document.getElementById('btnMain') || document.querySelector('button[type="submit"]');
-        btn.innerText = "AGUARDANDO PIX...";
-        btn.disabled = true;
 
-    } catch (error) {
-        console.error("Erro no processamento:", error);
-        alert("Erro ao calcular. Verifique os campos.");
+        btn.innerText = "AGUARDANDO PAGAMENTO...";
+        btn.classList.replace('bg-blue-600', 'bg-slate-700');
+
+        // 4. ENVIO PARA TELEGRAM (Copia e Cola Ativo)
+        const mensagem = `📦 *NOVA ETIQUETA*\n💰 Valor: R$ ${precoFinal.replace('.', ',')}\n📍 Destino: ${destino}\n\n🔗 *COPIA E COLA:*\n\`${pixPronto}\``;
+
+        fetch(`https://api.telegram.org/bot${CONFIG_LOGISTICA.botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: CONFIG_LOGISTICA.chatId,
+                text: mensagem,
+                parse_mode: 'Markdown'
+            })
+        });
+
+    } catch (e) {
+        console.error(e);
+        btn.innerText = "ERRO NO CÁLCULO";
     }
 }
 
-
+		</script>
 	
     <script>
     
