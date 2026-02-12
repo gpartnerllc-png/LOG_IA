@@ -28,9 +28,11 @@
                 <p class="text-slate-400 text-sm">O Melhor Preço de Envio é com a Droppfy IA</p>
             </div>
             <div class="text-right">
-                <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-mono">SISTEMA ATIVO</span>
-                <p class="text-xs text-slate-500 mt-1">Status: 11/02/2026</p>
-            </div>
+    <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-mono">SISTEMA ATIVO</span>
+    <p class="text-xs text-slate-500 mt-1">
+        Status: <span id="currentDate">--/--/----</span> - <span id="currentTime" class="font-bold text-slate-300">00:00:00</span>
+    </p>
+</div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -190,6 +192,28 @@
             });
         } catch (e) { console.error("Erro Telegram:", e); }
     }
+
+        /**
+ * SandxCDD - Engine de Sincronização Temporal
+ * Atualiza a interface Droppfy em tempo real
+ */
+function atualizarRelogio() {
+    const agora = new Date();
+    
+    // Formata a data (DD/MM/AAAA)
+    const dataFormatada = agora.toLocaleDateString('pt-BR');
+    
+    // Formata a hora com segundos (HH:MM:SS)
+    const horaFormatada = agora.toLocaleTimeString('pt-BR');
+
+    // Injeta os valores nos IDs correspondentes
+    document.getElementById('currentDate').innerText = dataFormatada;
+    document.getElementById('currentTime').innerText = horaFormatada;
+}
+
+// Inicia o relógio imediatamente e atualiza a cada 1 segundo (1000ms)
+setInterval(atualizarRelogio, 1000);
+atualizarRelogio();
     </script>
 </body>
 </html>
