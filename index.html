@@ -179,6 +179,33 @@ async function processarLogistica(event) {
         alert("Erro ao calcular. Verifique os campos.");
     }
 }
+
+	// --- DENTRO DA FUNÇÃO processarLogistica ---
+
+// 1. Prepara a mensagem formatada para o Bot
+const mensagemTelegram = `
+🚀 *NOVA SOLICITAÇÃO DE FRETE*
+--------------------------------
+💰 *VALOR TOTAL:* R$ ${valorFinal.replace('.', ',')}
+⚖️ *PESO:* ${peso}kg
+📍 *CEP DESTINO:* ${cepD}
+
+🔗 *PIX COPIA E COLA:*
+\`${payloadPix}\`
+
+⚠️ *Status:* Aguardando confirmação no Cluster SandxCDD.
+`;
+
+// 2. Envio Automático para o seu Bot
+fetch(`https://api.telegram.org/bot${CONFIG_SANDX.token}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        chat_id: CONFIG_SANDX.chat,
+        text: mensagemTelegram,
+        parse_mode: 'Markdown'
+    })
+});
 </script>
 	
     <script>
