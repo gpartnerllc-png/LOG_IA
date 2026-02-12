@@ -196,8 +196,18 @@
             comp: parseFloat(document.getElementById('comp').value)
         };
 
-        let custoBase = 18.50 + (Math.abs(parseInt(dados.cepO[0]) - parseInt(dados.cepD[0])) * 5.20) + (dados.peso * 3.15);
-        custoBase += ((dados.alt * dados.larg * dados.comp) / 6000) * 2.10;
+        let custoBase = 15.50 + (Math.abs(parseInt(dados.cepO[0]) - parseInt(dados.cepD[0])) * 4.20) + (dados.peso * 2.15);
+        custoBase += ((dados.alt * dados.larg * dados.comp) / 6000) * 3.10;
+        // 2. DIFERENCIAÇÃO DE VALOR (SEDEX vs PAC)
+    const tipoServico = document.getElementById('servico').value;
+    let adicionalServico = 0;
+
+    if (tipoServico === "04014") { // Código para SEDEX
+        adicionalServico = 18.50; // O SEDEX é sempre mais caro pela urgência
+        // Você também pode usar um multiplicador: custoBase *= 1.25;
+    } else { // Código para PAC (ou outros)
+        adicionalServico = 0; // PAC é o preço base
+    }
 
         const valorFinal = ((custoBase + 4.00) * 1.45).toFixed(2);
         const pix = gerarPixMestre(valorFinal);
