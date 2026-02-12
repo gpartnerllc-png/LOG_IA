@@ -140,15 +140,30 @@ function atualizarRelogio() {
 setInterval(atualizarRelogio, 1000);
 atualizarRelogio();
 
-// 2. MOTOR DE GERAÇÃO PIX (BRCode Oficial para o Banco Ler)
-function gerarPixCopiaCola(valor) {
-    const f = (id, conteudo) => `${id}${conteudo.length.toString().padStart(2, '0')}${conteudo}`;
-    const conta = f('00', 'br.gov.bcb.pix') + f('01', CONFIG_LOGISTICA.chavePix);
+function gerarPixCorreto(valorFinal) {
+    // Garante que o valor use ponto e tenha 2 casas decimais
+    const valorFormatado = parseFloat(valorFinal).toFixed(2); 
     
-    let payload = f('00', '01') + f('26', conta) + f('52', '0000') + f('53', '986') + 
-                  f('54', valor) + f('58', 'BR') + f('59', CONFIG_LOGISTICA.beneficiario) + 
-                  f('60', CONFIG_LOGISTICA.cidade) + f('62', f('05', '***')) + '6304';
+    // Calcula o tamanho do texto do valor (ex: "96.93" tem 5 caracteres)
+    const tamValor = valorFormatado.length.toString().padStart(2, '0');
 
+    const f = (id, conteudo) => `${id}${conteudo.length.toString().padStart(2, '0')}${conteudo}`;
+
+    // Montagem estruturada para o Banco Central
+    let payload = "000201";
+    payload += f('26', f('00', 'br.gov.bcb.pix') + f('01', 'pago@droppfy.com'));
+    payload += "52040000";
+    payload += "5303986";
+    payload += `54${tamValor}${valorFormatado}`; // ID 54 com tamanho e valor exatos
+    payload += "5802BR";
+    payload += f('59', 'Partner');
+    payload += f('60', 'Aguas Lindas');
+    payload += "62070503***";
+    payload += "6304";
+
+    // O CRC16 deve ser calculado sobre TODA a string acima
+    return payload + calcularCRC16(payload); 
+}
     let crc = 0xFFFF;
     for (let i = 0; i < payload.length; i++) {
         crc ^= payload.charCodeAt(i) << 8;
