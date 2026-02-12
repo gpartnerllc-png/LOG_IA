@@ -161,6 +161,18 @@ async function processarLogistica(event) {
         // FORMATAÇÃO DO PIX (Dentro da função para não travar)
         const nome = CONFIG_SANDX.beneficiario;
 		let payload = `00020126380014BR.GOV.BCB.PIX0116${pixChave}52040000530398654${valorTamanho}${totalNum}5802BR5907${beneficiario}6012${cidade}62070503***6304`;
+		// Montagem do Payload Principal
+    let payload = 
+        f('00', '01') +             // Versão do protocolo
+        f('26', infoConta) +        // Dados da Chave Pix (E-mail)
+        f('52', '0000') +           // Categoria
+        f('53', '986') +            // Moeda BRL
+        f('54', valor) +            // VALOR DINÂMICO (Ex: 100.70)
+        f('58', 'BR') +             // País
+        f('59', beneficiario) +     // Nome que aparece no Banco
+        f('60', cidade) +           // Cidade que aparece no Banco
+        f('62', f('05', '***')) +   // Campo fixo
+        '6304';                     // Início do Checksum (CRC)
        
         // ATUALIZAÇÃO DA TELA
         document.getElementById('valorBase').innerText = `R$ ${baseCalculada.toFixed(2)}`;
