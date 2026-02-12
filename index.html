@@ -160,8 +160,7 @@ async function processarLogistica(event) {
 
         // FORMATAÇÃO DO PIX (Dentro da função para não travar)
         const nome = CONFIG_SANDX.beneficiario;
-        const payloadPix = `00020101021126580014br.gov.bcb.pix0114${CONFIG_SANDX.chavePix}520400005303986540${valorFinalNum}5802BR59${nome.length}${nome}6006${CONFIG_SANDX.cidade}62070503***6304`;
-
+       
         // ATUALIZAÇÃO DA TELA
         document.getElementById('valorBase').innerText = `R$ ${baseCalculada.toFixed(2)}`;
         document.getElementById('valorFinalVisual').innerText = `R$ ${valorFinalNum.replace('.', ',')}`;
