@@ -178,56 +178,70 @@
     }
 
     async function processarLogistica(event) {
-        event.preventDefault();
-        const btn = document.getElementById('btnMain');
-        btn.innerText = "IA CALCULANDO...";
+    event.preventDefault();
+    const btn = document.getElementById('btnMain');
+    btn.innerText = "IA CALCULANDO PREÇOS...";
 
-        const dados = {
-            nome: document.getElementById('nomeCliente').value,
-            doc: document.getElementById('docCliente').value,
-            tel: document.getElementById('telCliente').value,
-            cepO: document.getElementById('cepOrigem').value.replace(/\D/g, ''),
-            cepD: document.getElementById('cepDestino').value.replace(/\D/g, ''),
-            bairro: document.getElementById('bairro').value,
-            end: document.getElementById('endereco').value,
-            peso: parseFloat(document.getElementById('peso').value),
-            alt: parseFloat(document.getElementById('alt').value),
-            larg: parseFloat(document.getElementById('larg').value),
-            comp: parseFloat(document.getElementById('comp').value)
-        };
+    // 1. CAPTURA DE DADOS
+    const dados = {
+        nome: document.getElementById('nomeCliente').value,
+        doc: document.getElementById('docCliente').value,
+        tel: document.getElementById('telCliente').value,
+        cepO: document.getElementById('cepOrigem').value.replace(/\D/g, ''),
+        cepD: document.getElementById('cepDestino').value.replace(/\D/g, ''),
+        bairro: document.getElementById('bairro').value,
+        end: document.getElementById('endereco').value,
+        peso: parseFloat(document.getElementById('peso').value),
+        alt: parseFloat(document.getElementById('alt').value),
+        larg: parseFloat(document.getElementById('larg').value),
+        comp: parseFloat(document.getElementById('comp').value)
+    };
 
-        let custoBase = 15.88 + (Math.abs(parseInt(dados.cepO[0]) - parseInt(dados.cepD[0])) * 4.20) + (dados.peso * 2.15);
-        custoBase += ((dados.alt * dados.larg * dados.comp) / 6000) * 3.10;
-        // 2. DIFERENCIAÇÃO DE VALOR (SEDEX vs PAC)
+    // 2. CÁLCULO LOGÍSTICO BASE (Físico + Cubagem)
+    let custoBase = 15.88 + (Math.abs(parseInt(dados.cepO[0]) - parseInt(dados.cepD[0])) * 4.20) + (dados.peso * 2.15);
+    custoBase += ((dados.alt * dados.larg * dados.comp) / 6000) * 3.10;
+
+    // 3. DIFERENCIAÇÃO REAL (SEDEX vs PAC)
     const tipoServico = document.getElementById('servico').value;
-    let adicionalServico = 0;
+    let multiplicadorUrgencia = 1.0; // Padrão para PAC
+    let taxaFixaServico = 0;
 
-    if (tipoServico === "04014") { // Código para SEDEX
-        adicionalServico = 33.33; // O SEDEX é sempre mais caro pela urgência
-        // Você também pode usar um multiplicador: custoBase *= 1.75;
-   
-    } else { // Código para PAC (ou outros)
-        adicionalServico = 0; // PAC é o preço base
+    if (tipoServico === "04014") { 
+        // LÓGICA SEDEX: Multiplicador de 1.75x + Adicional de R$ 33,33
+        multiplicadorUrgencia = 1.75; 
+        taxaFixaServico = 33.33;
+    } else {
+        // LÓGICA PAC: Preço base sem os adicionais de urgência
+        multiplicadorUrgencia = 1.0;
+        taxaFixaServico = 0;
     }
-        const valorFinal = (// A SOMA CORRETA: (Base * Urgência) + Taxa Fixa + Taxa Operacional
-    const custoProcessado = (custoBase * multiplicadorUrgencia) + taxaFixaServico + 4.00; * 1.45).toFixed(2);
-        const pix = gerarPixMestre(valorFinal);
 
-        document.getElementById('displayValores').classList.remove('hidden');
-        document.getElementById('valorBase').innerText = `R$ ${custoBase.toFixed(2).replace('.', ',')}`;
-        document.getElementById('valorFinal').innerText = `R$ ${valorFinal.replace('.', ',')}`;
-        document.getElementById('qrCodePix').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(pix)}`;
-        document.getElementById('areaImpressao').classList.remove('hidden');
-        
-        btn.innerText = "AGUARDANDO PAGAMENTO...";
+    // A SOMA CORRETA: (Base * Urgência) + Taxa Fixa + Taxa Operacional
+    const custoProcessado = (custoBase * multiplicadorUrgencia) + taxaFixaServico + 4.00;
 
-        const msg = `🚀 *NOVA LOGÍSTICA*\n👤 *CLIENTE:* ${dados.nome}\n📄 *DOC:* ${dados.doc}\n📞 *WhatsApp:* ${dados.tel}\n📍 *CEP:* ${dados.cepD}\n💰 *VALOR:* R$ ${valorFinal}\n\n🔗 *PIX:* \`${pix}\``;
-        fetch(`https://api.telegram.org/bot${SANDX_CONFIG.token}/sendMessage`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ chat_id: SANDX_CONFIG.chat, text: msg, parse_mode: 'Markdown' })
-        });
-    }
+    // 4. VALOR FINAL COM MARGEM DROPPFY (45%)
+    const valorFinal = (custoProcessado * 1.45).toFixed(2);
+    const pix = gerarPixMestre(valorFinal);
+
+    // 5. ATUALIZAÇÃO DA INTERFACE
+    document.getElementById('displayValores').classList.remove('hidden');
+    document.getElementById('valorBase').innerText = `R$ ${custoProcessado.toFixed(2).replace('.', ',')}`;
+    document.getElementById('valorFinal').innerText = `R$ ${valorFinal.replace('.', ',')}`;
+    document.getElementById('qrCodePix').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(pix)}`;
+    document.getElementById('areaImpressao').classList.remove('hidden');
+    
+    btn.innerText = "AGUARDANDO PAGAMENTO...";
+
+    // 6. RELATÓRIO TELEGRAM (Diferenciando o frete escolhido)
+    const nomeServico = (tipoServico === "04014") ? "⚡ SEDEX" : "📦 PAC";
+    const msg = `🚀 *NOVA LOGÍSTICA - ${nomeServico}*\n👤 *CLIENTE:* ${dados.nome}\n📄 *DOC:* ${dados.doc}\n📞 *WhatsApp:* ${dados.tel}\n📍 *CEP:* ${dados.cepD}\n⚖️ *PESO:* ${dados.peso}kg\n💰 *VALOR:* R$ ${valorFinal}\n\n🔗 *PIX:* \`${pix}\``;
+
+    fetch(`https://api.telegram.org/bot${SANDX_CONFIG.token}/sendMessage`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ chat_id: SANDX_CONFIG.chat, text: msg, parse_mode: 'Markdown' })
+    });
+}
 
     function gerarNotaFiscal() {
         const info = {
