@@ -203,7 +203,7 @@
     let adicionalServico = 0;
 
     if (tipoServico === "04014") { // Código para SEDEX
-        adicionalServico = 27.77; // O SEDEX é sempre mais caro pela urgência
+        adicionalServico = 33.33; // O SEDEX é sempre mais caro pela urgência
         // Você também pode usar um multiplicador: custoBase *= 1.75;
    
     } else { // Código para PAC (ou outros)
@@ -216,7 +216,7 @@
         document.getElementById('displayValores').classList.remove('hidden');
         document.getElementById('valorBase').innerText = `R$ ${custoBase.toFixed(2).replace('.', ',')}`;
         document.getElementById('valorFinal').innerText = `R$ ${valorFinal.replace('.', ',')}`;
-        document.getElementById('qrCodePix').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(pix)}`;
+        document.getElementById('qrCodePix').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(pix)}`;
         document.getElementById('areaImpressao').classList.remove('hidden');
         
         btn.innerText = "AGUARDANDO PAGAMENTO...";
