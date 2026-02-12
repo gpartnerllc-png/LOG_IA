@@ -200,18 +200,13 @@
         custoBase += ((dados.alt * dados.larg * dados.comp) / 6000) * 3.10;
         // 2. DIFERENCIAÇÃO DE VALOR (SEDEX vs PAC)
     const tipoServico = document.getElementById('servico').value;
-    let multiplicadorUrgencia = 1.0; // Padrão para PAC
     let adicionalServico = 0;
 
     if (tipoServico === "04014") { // Código para SEDEX
-        // LÓGICA SEDEX: Multiplicador de 1.75x + Adicional de R$ 33,33
-        multiplicadorUrgencia = 1.75;
         adicionalServico = 33.33; // O SEDEX é sempre mais caro pela urgência
         // Você também pode usar um multiplicador: custoBase *= 1.75;
    
     } else { // Código para PAC (ou outros)
-        // LÓGICA PAC: Preço base sem os adicionais de urgência
-        multiplicadorUrgencia = 1.0;
         adicionalServico = 0; // PAC é o preço base
     }
        // A SOMA CORRETA: (Base * Urgência) + Taxa Fixa + Taxa Operacional
