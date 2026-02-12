@@ -126,9 +126,38 @@ const CONFIG_LOGISTICA = {
     taxaFixaManuseio: 4.00,
     botToken: "8539700676:AAH2YR3nb7uTyp2DUmeSqHRGZcQjU4anoVA",
     chatId: "1703808186",
-    chavePix: "pago@droppfy.com",
-    beneficiario: "Partner",
-    cidade: "Aguas Lindas"
+   // 1. Dados base (Alinhados com suas imagens)
+const chavePix = "pago@droppfy.com"; // 16 caracteres
+const beneficiario = "Partner";      // 07 caracteres
+const cidade = "Aguas Lindas";      // 12 caracteres
+const valorPix = precoFinal;         // Ex: "96.93"
+
+// 2. A "Mágica" do ID 26 (O banco só lê se isso aqui estiver perfeito)
+// '0014br.gov.bcb.pix' (18 chars) + '0116pago@droppfy.com' (20 chars) = 38 caracteres
+const subId26 = "0014br.gov.bcb.pix0116" + chavePix; 
+const id26 = "2638" + subId26; 
+
+// 3. Montagem da String Mestra (BRCode)
+const tamValor = valorPix.length.toString().padStart(2, '0');
+let payload = `000201${id26}52040000530398654${tamValor}${valorPix}5802BR5907${beneficiario}6012${cidade}62070503***6304`;
+
+// 4. Cálculo do CRC16 (O carimbo que o banco exige para validar)
+function getCRC16(data) {
+    let crc = 0xFFFF;
+    for (let i = 0; i < data.length; i++) {
+        crc ^= data.charCodeAt(i) << 8;
+        for (let j = 0; j < 8; j++) {
+            if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021;
+            else crc <<= 1;
+        }
+    }
+    return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+}
+
+const payloadPixVálido = payload + getCRC16(payload);
+
+// 5. Agora sim, gera o QR Code e manda pro Telegram
+document.getElementById('qrCodePix').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(payloadPixVálido)}`;
 };
 
 // 1. RELÓGIO (Sincronização Temporal)
