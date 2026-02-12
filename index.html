@@ -25,7 +25,7 @@
                 <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
                     DROPPFY LOGISTICS AI
                 </h1>
-                <p class="text-slate-400 text-sm">O Melhor Preço de Envio é com a Droppfy IA</p>
+                <p class="text-slate-400 text-sm">O Melhor Preço de Envio é com a Droppfy</p>
             </div>
             <div class="text-right">
     <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-mono">SISTEMA ATIVO</span>
@@ -119,6 +119,20 @@
             </div>
         </div>
     </div>
+	  <script>
+
+	// Substitua pela sua chave PIX (CPF, E-mail ou Chave Aleatória)
+const minhaChavePix = "pafa@droppfy.com"; 
+const nomeBeneficiario = "Partner - Mikale Rabelo Do Nascimento";
+const cidade = "Brasil";
+
+// Gera o link padrão para o QR Code (Formato simplificado)
+// Nota: Para PIX Copia e Cola real, o ideal é usar uma biblioteca de payload, 
+// mas para o QR Code visual de cobrança rápida, você pode usar este formato:
+const payloadPix = `00020101021126580014br.gov.bcb.pix0114${minhaChavePix}520400005303986540${valorFinal}5802BR59${nomeBeneficiario.length}${nomeBeneficiario}6009${cidade}62070503***6304`;
+
+// Atualiza a imagem do QR Code na tela
+document.getElementById('qrCodePix').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(payloadPix)}`;
 
     <script>
     const CONFIG_LOGISTICA = {
