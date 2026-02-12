@@ -167,35 +167,67 @@ function gerarPixMestre(valor) {
     return payload + finalCRC;
 }
 
-// FUNÇÃO DE DISPARO (LIGADA AO SEU BOTÃO)
 async function processarLogistica(event) {
     event.preventDefault();
     const btn = document.getElementById('btnMain');
-    btn.innerText = "IA CALCULANDO...";
+    btn.innerText = "IA CALCULANDO DISTÂNCIA...";
 
-    const cepD = document.getElementById('cepDestino').value;
-    const peso = document.getElementById('peso').value;
+    // 1. CAPTURA DE DADOS COMPLETA
+    const cepO = document.getElementById('cepOrigem').value.replace(/\D/g, '');
+    const cepD = document.getElementById('cepDestino').value.replace(/\D/g, '');
+    const peso = parseFloat(document.getElementById('peso').value);
+    const alt = parseFloat(document.getElementById('alt').value) || 0;
+    const larg = parseFloat(document.getElementById('larg').value) || 0;
+    const comp = parseFloat(document.getElementById('comp').value) || 0;
+    const servico = document.getElementById('servico').value;
 
-    // Cálculo real para bater com o seu Telegram
-    let preco = 18.50 + (peso * 3.15) + 45.00; 
-    const valorFinal = (preco * 1.45).toFixed(2); 
+    // 2. MOTOR LOGÍSTICO SANDXCDD
+    let custoBase = 18.50; 
+    
+    // Cálculo por Distância (Diferença entre regiões do Brasil)
+    const zonaOrigem = parseInt(cepO[0]);
+    const zonaDestino = parseInt(cepD[0]);
+    const distanciaKm = Math.abs(zonaOrigem - zonaDestino);
+    custoBase += (distanciaKm * 5.20); 
 
+    // Cálculo por Peso
+    custoBase += (peso * 3.15); 
+
+    // Cálculo por Volume (Dimensões)
+    const volume = (alt * larg * comp) / 6000; // Peso cubado padrão
+    custoBase += (volume * 2.10);
+
+    // Adicional de Serviço (SEDEX)
+    if (servico === "04014") custoBase += 12.00;
+
+    // Margem Droppfy + Taxa de Manuseio
+    const valorFinal = ((custoBase + 4.00) * 1.45).toFixed(2); 
+
+    // 3. GERAÇÃO DO PIX BANCÁRIO (O que o banco lê)
     const pixBancario = gerarPixMestre(valorFinal);
 
-    // Mostra na tela
+    // 4. ATUALIZAÇÃO DA TELA
     document.getElementById('displayValores').classList.remove('hidden');
+    document.getElementById('valorBase').innerText = `R$ ${custoBase.toFixed(2).replace('.', ',')}`;
     document.getElementById('valorFinal').innerText = `R$ ${valorFinal.replace('.', ',')}`;
     document.getElementById('qrCodePix').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(pixBancario)}`;
     
-    btn.innerText = "AGUARDANDO PIX...";
+    btn.innerText = "AGUARDANDO PAGAMENTO...";
 
-    // Envia para o seu Log_AI Bot
+    // 5. ENVIO PARA TELEGRAM COM DETALHES LOGÍSTICOS
+    const msg = `🚀 *NOVA LOGÍSTICA DROPPFY*\n` +
+                `💰 VALOR: R$ ${valorFinal}\n` +
+                `📍 DESTINO: ${cepD}\n` +
+                `⚖️ PESO: ${peso}kg\n` +
+                `📏 DIMENSÕES: ${alt}x${larg}x${comp}\n\n` +
+                `🔗 *PIX COPIA E COLA:*\n\`${pixBancario}\``;
+
     fetch(`https://api.telegram.org/bot${SANDX_CONFIG.token}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             chat_id: SANDX_CONFIG.chat,
-            text: `🚀 *NOVA ETIQUETA*\n💰 Valor: R$ ${valorFinal}\n📍 Destino: ${cepD}\n\n🔗 *COPIA E COLA:*\n\`${pixBancario}\``,
+            text: msg,
             parse_mode: 'Markdown'
         })
     });
