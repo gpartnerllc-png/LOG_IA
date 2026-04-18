@@ -12,22 +12,13 @@
         .glass { background: rgba(22, 30, 46, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
         .ai-glow { box-shadow: 0 0 25px rgba(56, 189, 248, 0.1); }
         input, select { transition: all 0.2s ease; color: white; outline: none; }
-        input:focus { border-color: #38bdf8 !important; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
+        input:focus { border-color: #38bdf8 !important; box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); }
         
-        /* Estilos de Impressão Lado a Lado */
         @media print {
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
-            #printArea { 
-                position: absolute; left: 0; top: 0; width: 100%; 
-                display: flex !important; flex-direction: row !important; 
-                justify-content: space-between; gap: 10px; padding: 0; color: black;
-            }
-            .print-card { 
-                border: 2px solid #000; padding: 12px; width: 48%; 
-                height: 520px; font-size: 11px; display: flex; flex-direction: column;
-                box-sizing: border-box; background: white !important;
-            }
+            #printArea { position: absolute; left: 0; top: 0; width: 100%; display: flex !important; flex-direction: row !important; justify-content: space-between; gap: 10px; padding: 0; color: black; }
+            .print-card { border: 2px solid #000; padding: 12px; width: 48%; height: 520px; font-size: 11px; display: flex; flex-direction: column; box-sizing: border-box; background: white !important; }
             .bg-black-print { background: black !important; color: white !important; -webkit-print-color-adjust: exact; }
         }
     </style>
@@ -51,12 +42,10 @@
         </header>
 
         <form id="formSandx" onsubmit="processarLogistica(event)" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
             <div class="glass p-6 rounded-[2.5rem] ai-glow space-y-4">
                 <h2 class="text-sm font-black uppercase tracking-widest flex items-center text-blue-400">
                     <span class="bg-blue-500/20 p-2 rounded-lg mr-3">📍</span> Destinação Detalhada
                 </h2>
-                
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[9px] text-slate-500 mb-1 uppercase font-bold">CEP Origem</label>
@@ -64,20 +53,17 @@
                     </div>
                     <div>
                         <label class="block text-[9px] text-slate-500 mb-1 uppercase font-bold">CEP Destino</label>
-                        <input type="text" id="cepDestino" placeholder="00000-000" required class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs font-mono">
+                        <input type="text" id="cepDestino" placeholder="00000-000" required onblur="buscarEndereco()" class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs font-mono">
                     </div>
                 </div>
-
                 <div>
                     <label class="block text-[9px] text-slate-500 mb-1 uppercase font-bold">Nome Completo</label>
                     <input type="text" id="nomeCliente" required class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs uppercase font-semibold">
                 </div>
-
                 <div>
                     <label class="block text-[9px] text-slate-500 mb-1 uppercase font-bold">CPF ou CNPJ do Destinatário</label>
                     <input type="text" id="docCliente" required placeholder="000.000.000-00" class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs">
                 </div>
-
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[9px] text-slate-500 mb-1 uppercase font-bold">WhatsApp</label>
@@ -88,7 +74,6 @@
                         <input type="text" id="bairro" required class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs uppercase">
                     </div>
                 </div>
-
                 <div>
                     <label class="block text-[9px] text-slate-500 mb-1 uppercase font-bold">Endereço e Número</label>
                     <input type="text" id="endereco" required class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs uppercase">
@@ -99,46 +84,37 @@
                 <h2 class="text-sm font-black uppercase tracking-widest flex items-center text-emerald-400">
                     <span class="bg-emerald-500/20 p-2 rounded-lg mr-3">📦</span> Droppfy Packing
                 </h2>
-                
                 <div class="grid grid-cols-2 gap-3">
                     <div class="p-4 border border-blue-500/20 rounded-2xl bg-blue-500/5">
                         <p class="text-[8px] text-blue-400 uppercase font-black mb-1">Sugestão de Caixa</p>
-                        <p class="text-xs font-bold text-white">Caixa Tipo M</p>
+                        <p class="text-xs font-bold text-white">Caixa Tipo M / Bag G</p>
                     </div>
                     <div class="p-4 border border-emerald-500/20 rounded-2xl bg-emerald-500/5">
                         <p class="text-[8px] text-emerald-400 uppercase font-black mb-1">Segurança</p>
                         <p class="text-xs font-bold text-white">SSL-AES 256</p>
                     </div>
                 </div>
-
                 <div>
                     <label class="block text-[9px] text-slate-500 mb-2 uppercase font-bold">Dimensões do Pacote (cm)</label>
                     <div class="grid grid-cols-3 gap-2">
-                        <input type="number" id="alt" value="20" class="recalc w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs text-center font-bold" title="Altura">
-                        <input type="number" id="larg" value="20" class="recalc w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs text-center font-bold" title="Largura">
-                        <input type="number" id="comp" value="20" class="recalc w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs text-center font-bold" title="Comprimento">
+                        <input type="number" id="alt" value="20" onchange="calcularAutomatico()" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs text-center font-bold" placeholder="Alt">
+                        <input type="number" id="larg" value="20" onchange="calcularAutomatico()" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs text-center font-bold" placeholder="Larg">
+                        <input type="number" id="comp" value="20" onchange="calcularAutomatico()" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs text-center font-bold" placeholder="Comp">
                     </div>
                 </div>
-
                 <div>
                     <label class="block text-[9px] text-slate-500 mb-2 uppercase font-bold">Peso Estimado</label>
-                    <select id="peso" class="recalc w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs font-bold">
-                        <option value="0.1">Até 100g</option>
-                        <option value="0.2">Até 200g</option>
+                    <select id="peso" onchange="calcularAutomatico()" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs font-bold uppercase">
                         <option value="0.3">Até 300g</option>
-                        <option value="0.4">Até 400g</option>
-                        <option value="0.5">Até 500g</option>
                         <option value="1">Até 1kg</option>
                         <option value="5">Até 5kg</option>
-                        <option value="10">Até 10kg</option>
                         <option value="15">Até 15kg</option>
-                        <option value="20">Até 20kg</option>
+                        <option value="30">Até 30kg</option>
                     </select>
                 </div>
-
                 <div>
-                    <label class="block text-[9px] text-slate-500 mb-2 uppercase font-bold">Modalidade de Envio</label>
-                    <select id="servico" class="recalc w-full bg-slate-900 p-4 rounded-xl border border-blue-500/50 text-xs font-black text-blue-400 uppercase tracking-tighter">
+                    <label class="block text-[9px] text-slate-500 mb-2 uppercase font-bold">Serviço de Envio</label>
+                    <select id="servico" onchange="calcularAutomatico()" class="w-full bg-slate-900 p-4 rounded-xl border border-blue-500/50 text-xs font-black text-blue-400 uppercase">
                         <option value="moto">🏍️ Droppfy Express (Same Day)</option>
                         <option value="04014">⚡ SEDEX (Fast Delivery)</option>
                         <option value="04510">📦 PAC (Economic)</option>
@@ -151,197 +127,158 @@
                     <h2 class="text-sm font-black uppercase tracking-widest flex items-center mb-8 text-blue-400">
                         <span class="bg-blue-500/20 p-2 rounded-lg mr-3">⚡</span> Painel de Checkout
                     </h2>
-                    
                     <div id="displayValores" class="hidden space-y-4">
-                        <div class="flex justify-between items-center text-[10px] text-slate-400 uppercase font-bold">
-                            <span>Taxa Logística de Operação:</span>
-                            <span id="valorBase" class="text-white">R$ 0,00</span>
+                        <div class="flex justify-between text-[10px] text-slate-400 uppercase font-bold">
+                            <span>Taxa Operacional:</span>
+                            <span id="valorBase" class="text-white font-mono">R$ 0,00</span>
                         </div>
                         <div class="flex justify-between items-end border-t border-slate-800 pt-4">
                             <span class="text-xs font-black uppercase text-slate-300">Total Droppfy:</span>
                             <span id="valorFinal" class="text-3xl font-black text-emerald-400 tabular-nums">R$ 0,00</span>
                         </div>
-                        
                         <div class="bg-white p-4 rounded-3xl flex flex-col items-center shadow-2xl mt-4">
-                            <p class="text-black text-[10px] font-black uppercase mb-3 tracking-widest">Escaneie para Pagar</p>
                             <img id="qrCodePix" src="" class="w-32 h-32">
                         </div>
-
-                        <button type="button" onclick="window.print()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-lg shadow-emerald-900/20">
-                            🖨️ Imprimir Declaração + Etiqueta
-                        </button>
+                        <button type="button" onclick="window.print()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">🖨️ Imprimir Declaração + Etiqueta</button>
                     </div>
                 </div>
-
                 <div class="mt-6">
-                    <button type="submit" id="btnMain" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-5 rounded-2xl shadow-xl transition-all text-xs uppercase tracking-widest border-b-4 border-blue-800 active:border-b-0">
-                        Calcular e Gerar Pix
-                    </button>
-                    <p class="text-[8px] text-center text-slate-600 uppercase font-bold mt-4 tracking-widest">Integrado ao Cluster SandxCDD Global v4.0</p>
+                    <button type="submit" id="btnMain" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-5 rounded-2xl shadow-xl transition-all text-xs uppercase tracking-widest">Calcular e Gerar Pix</button>
+                    <p class="text-[8px] text-center text-slate-600 uppercase font-bold mt-4 tracking-widest italic">Integrado ao Cluster SandxCDD Global v4.2</p>
                 </div>
             </div>
         </form>
+
+        <footer class="mt-12 border-t border-slate-800 pt-8 pb-12 flex flex-col md:flex-row justify-between items-center gap-6 opacity-60 grayscale hover:grayscale-0 transition-all">
+            <div class="text-[9px] font-bold uppercase tracking-widest text-slate-500">
+                <p>© 2026 Droppfy by Partner - Todos os Direitos Reservados</p>
+                <p>CNPJ: 45.123.456/0001-89 | Inscrição Estadual: Isento</p>
+            </div>
+            <div class="flex gap-4">
+                <img src="https://images.yampi.me/assets/stores/droppfy/uploads/icon/65f3d8c635540.png" class="h-6 w-6">
+                <span class="text-[10px] font-black text-blue-400 self-center">SEGURANÇA BLINDADA SSL-AES 256</span>
+            </div>
+        </footer>
     </div>
 
     <div id="printArea" class="hidden">
         <div class="print-card">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #000; padding-bottom: 10px;">
-                <div>
-                    <h1 style="font-size: 26px; font-weight: 900; margin: 0; line-height: 0.9;">DROPPFY</h1>
-                    <p style="margin: 0; font-size: 10px; font-weight: 900; letter-spacing: 2px;">LOGISTICS AI</p>
-                </div>
-                <div class="bg-black-print" style="padding: 12px 25px; text-align: center;">
-                    <span id="pServico" style="font-size: 20px; font-weight: 900;">SEDEX</span>
-                </div>
+            <div style="display: flex; justify-content: space-between; border-bottom: 3px solid #000; padding-bottom: 10px;">
+                <h1 style="font-size: 26px; font-weight: 900; margin: 0;">DROPPFY</h1>
+                <div class="bg-black-print" style="padding: 10px 20px;"><span id="pServico" style="font-size: 20px; font-weight: 900;">SEDEX</span></div>
             </div>
-
-            <div style="background: black; height: 60px; width: 100%; margin: 15px 0;"></div>
-
-            <div style="margin-top: 15px; flex-grow: 1;">
-                <p style="font-size: 9px; font-weight: 900; margin-bottom: 5px; border-bottom: 1px solid #ddd; width: fit-content;">DESTINATÁRIO</p>
-                <p style="font-size: 18px; font-weight: 900; margin-bottom: 10px;" id="pNome">CARREGANDO...</p>
-                <p style="font-size: 13px; line-height: 1.3; margin: 0;">
-                    <span id="pEndereco"></span><br>
-                    <span id="pBairro"></span><br>
-                    <strong>CEP: <span id="pCep"></span></strong>
-                </p>
+            <div style="background: black; height: 50px; margin: 15px 0;"></div>
+            <div style="flex-grow: 1;">
+                <p style="font-size: 16px; font-weight: 900; margin-bottom: 5px;" id="pNome">--</p>
+                <p id="pEndereco">--</p>
+                <p id="pBairro">--</p>
+                <strong>CEP: <span id="pCep">--</span></strong>
             </div>
-
             <div style="border-top: 2px dashed #000; padding-top: 10px; font-size: 9px;">
-                <p><strong>REMETENTE:</strong> Partner - Águas Lindas de Goiás-GO | CEP: 72915-484</p>
-                <div style="display: flex; justify-content: space-between; margin-top: 5px; font-weight: 900;">
-                    <span>DOC: #<span id="pRand"></span></span>
-                    <span>PROTOCOLO: SSL-AES 256</span>
-                </div>
+                <p><strong>REMETENTE:</strong> Partner Corp - Águas Lindas de Goiás-GO | 72915-484</p>
             </div>
         </div>
-
         <div class="print-card">
-            <h2 style="text-align: center; font-size: 14px; font-weight: 900; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 15px; background: #eee;">DECLARAÇÃO DE CONTEÚDO</h2>
-            
-            <div style="margin-bottom: 20px;">
-                <p><strong>DOCUMENTO/ID:</strong> <span id="pDoc"></span></p>
-                <p><strong>EMISSÃO:</strong> <span id="pData"></span></p>
-            </div>
-
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                <thead>
-                    <tr style="border-top: 2px solid #000; border-bottom: 2px solid #000; background: #f0f0f0;">
-                        <th style="padding: 10px; text-align: left;">DESCRIÇÃO DOS PRODUTOS</th>
-                        <th style="padding: 10px; text-align: center;">QTD</th>
-                        <th style="padding: 10px; text-align: center;">PESO</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr style="border-bottom: 1px solid #000;">
-                        <td style="padding: 12px; font-size: 10px;">SERVIÇO LOGÍSTICO INTEGRADO - ENVIO E-COMMERCE DROPPFY AI</td>
-                        <td style="padding: 12px; text-align: center;">01</td>
-                        <td style="padding: 12px; text-align: center;" id="pPeso">--</td>
-                    </tr>
-                </tbody>
+            <h2 style="text-align: center; border-bottom: 2px solid #000;">DECLARAÇÃO DE CONTEÚDO</h2>
+            <p style="margin-top: 10px;"><strong>DOC:</strong> <span id="pDoc">--</span></p>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                <tr style="background: #eee; border: 1px solid #000;">
+                    <th style="padding: 5px;">DESCRIÇÃO</th>
+                    <th style="padding: 5px;">PESO</th>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #000;">Serviço de Logística e-Commerce Droppfy AI</td>
+                    <td style="padding: 10px; border: 1px solid #000; text-align: center;" id="pPeso">--</td>
+                </tr>
             </table>
-
-            <div style="background: #f9f9f9; padding: 12px; border: 1px solid #ddd; font-size: 10px; margin-top: auto;">
-                <p style="text-align: justify; line-height: 1.4;"><em>Declaro que não me enquadro no conceito de contribuinte do ICMS e que o conteúdo transportado não possui finalidade comercial imediata.</em></p>
-            </div>
-
-            <div style="margin-top: 30px; text-align: center;">
-                <div style="border-top: 1px solid #000; width: 80%; margin: 0 auto; padding-top: 5px; font-size: 10px; font-weight: bold;">
-                    Assinatura do Expedidor Responsável
-                </div>
-            </div>
+            <p style="font-size: 8px; margin-top: auto;">Declaro que não sou contribuinte do ICMS e transporto mercadorias sem fins comerciais imediatos.</p>
         </div>
     </div>
 
     <script>
-    const CONFIG = {
-        pix: "pago@droppfy.com", beneficiario: "Partner", cidade: "Aguas Lindas",
-        token: "8539700676:AAH2YR3nb7uTyp2DUmeSqHRGZcQjU4anoVA", chat: "1703808186"
-    };
+    const CONFIG = { pix: "pago@droppfy.com", beneficiario: "Partner", cidade: "Aguas Lindas", token: "8539700676:AAH2YR3nb7uTyp2DUmeSqHRGZcQjU4anoVA", chat: "1703808186" };
 
     function iniciarRelogio() {
         const d = new Date();
         document.getElementById('data-atual').innerText = d.toLocaleDateString('pt-BR', {weekday: 'long', day: 'numeric', month: 'long'});
-        setInterval(() => {
-            const now = new Date();
-            document.getElementById('relogio').innerText = now.toLocaleTimeString('pt-BR');
-        }, 1000);
+        setInterval(() => { document.getElementById('relogio').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
     }
 
-    function gerarPixMestre(valor) {
+    async function buscarEndereco() {
+        const cep = document.getElementById('cepDestino').value.replace(/\D/g, '');
+        if (cep.length === 8) {
+            const resp = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+            const dados = await resp.json();
+            if (!dados.erro) {
+                document.getElementById('bairro').value = dados.bairro.toUpperCase();
+                document.getElementById('endereco').value = (dados.logradouro + ", ").toUpperCase();
+                calcularAutomatico();
+            }
+        }
+    }
+
+    function gerarPixMestre(v) {
         const f = (id, c) => `${id}${c.length.toString().padStart(2, '0')}${c}`;
-        const val = parseFloat(valor).toFixed(2);
+        const val = parseFloat(v).toFixed(2);
         const conta = f('00', 'br.gov.bcb.pix') + f('01', CONFIG.pix);
         let p = "000201" + f('26', conta) + "520400005303986" + f('54', val) + "5802BR" + f('59', CONFIG.beneficiario) + f('60', CONFIG.cidade) + "62070503***6304";
         let crc = 0xFFFF;
         for (let i = 0; i < p.length; i++) {
             crc ^= p.charCodeAt(i) << 8;
-            for (let j = 0; j < 8; j++) {
-                if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021;
-                else crc <<= 1;
-            }
+            for (let j = 0; j < 8; j++) { if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021; else crc <<= 1; }
         }
         return p + (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
     }
 
-    async function processarLogistica(e) {
-        if(e) e.preventDefault();
-        const btn = document.getElementById('btnMain');
-        btn.innerText = "IA PROCESSANDO DADOS...";
-
-        const dados = {
-            nome: document.getElementById('nomeCliente').value,
-            doc: document.getElementById('docCliente').value,
-            tel: document.getElementById('telCliente').value,
-            bairro: document.getElementById('bairro').value,
-            cepO: document.getElementById('cepOrigem').value.replace(/\D/g, ''),
-            cepD: document.getElementById('cepDestino').value.replace(/\D/g, ''),
-            endereco: document.getElementById('endereco').value,
-            peso: document.getElementById('peso').value
-        };
-
-        // Lógica de Preço
-        let base = 16.58 + (Math.abs(parseInt(dados.cepO[0] || 0) - parseInt(dados.cepD[0] || 0)) * 4.20);
-        if (dados.cepO.substring(0,2) === dados.cepD.substring(0,2)) base = 14.90;
-
+    function calcularAutomatico() {
+        const cepO = document.getElementById('cepOrigem').value.replace(/\D/g, '');
+        const cepD = document.getElementById('cepDestino').value.replace(/\D/g, '');
+        const pesoR = parseFloat(document.getElementById('peso').value);
+        const cubagem = (document.getElementById('alt').value * document.getElementById('larg').value * document.getElementById('comp').value) / 6000;
+        const pesoCobra = Math.max(pesoR, cubagem);
         const serv = document.getElementById('servico').value;
-        let m = 1.0; let t = 0;
-        if (serv === "04014") { m = 1.2; t = 10.84; }
-        else if (serv === "moto") { base = 8.50; }
 
-        const custo = (base * m) + t + 5.00;
-        const total = (custo * 1.79).toFixed(2);
+        // Lógica de Distância Precision
+        let base = 14.50;
+        const diff = Math.abs(parseInt(cepO.substring(0,3)) - parseInt(cepD.substring(0,3)));
+        if (cepO.substring(0,2) !== cepD.substring(0,2)) base = 17.80 + (diff * 0.15);
+        else if (diff > 5) base = 15.90; // Diferença no mesmo estado/região
 
-        // Preencher Impressão
-        document.getElementById('pNome').innerText = dados.nome.toUpperCase();
-        document.getElementById('pEndereco').innerText = dados.endereco.toUpperCase();
-        document.getElementById('pBairro').innerText = dados.bairro.toUpperCase();
-        document.getElementById('pCep').innerText = dados.cepD;
-        document.getElementById('pDoc').innerText = dados.doc;
-        document.getElementById('pPeso').innerText = dados.peso + "kg";
-        document.getElementById('pServico').innerText = (serv === "04014") ? "SEDEX" : (serv === "moto" ? "MOTO" : "PAC");
-        document.getElementById('pData').innerText = new Date().toLocaleDateString('pt-BR');
-        document.getElementById('pRand').innerText = Math.floor(Math.random() * 999999);
+        let m = 1.0; let taxaExtra = 5.00;
+        if (serv === "04014") { m = 1.55; taxaExtra = 15.50; } 
+        else if (serv === "moto") { base = 10.00; pesoCobra = 0; taxaExtra = 2.00; }
 
-        // UI Update
-        document.getElementById('displayValores').classList.remove('hidden');
-        document.getElementById('valorBase').innerText = `R$ ${custo.toFixed(2).replace('.',',')}`;
-        document.getElementById('valorFinal').innerText = `R$ ${total.replace('.',',')}`;
-        document.getElementById('qrCodePix').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(gerarPixMestre(total))}`;
-        
-        btn.innerText = "AGUARDANDO PAGAMENTO...";
+        const subtotal = (base + (pesoCobra * 3.20) + taxaExtra);
+        const total = (subtotal * 1.55).toFixed(2);
 
-        if(e) {
-            const msg = `🚀 *NOVA LOGÍSTICA - ${nomeServico}*\n👤 *CLIENTE:* ${dados.nome}\n📄 *DOC:* ${dados.doc}\n📞 *WhatsApp:* ${dados.tel}\n📍 *CEP:* ${dados.cepD}\n⚖️ *PESO:* ${dados.peso}kg\n💰 *VALOR:* R$ ${valorFinal}\n\n🔗 *PIX:* \`${pix}\``;
-            fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ chat_id: CONFIG.chat, text: msg, parse_mode: 'Markdown' })
-            });
+        if (cepD.length >= 8) {
+            document.getElementById('displayValores').classList.remove('hidden');
+            document.getElementById('valorBase').innerText = `R$ ${subtotal.toFixed(2).replace('.',',')}`;
+            document.getElementById('valorFinal').innerText = `R$ ${total.replace('.',',')}`;
+            document.getElementById('qrCodePix').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(gerarPixMestre(total))}`;
         }
+        return total;
     }
 
-    document.querySelectorAll('.recalc').forEach(el => el.addEventListener('change', () => processarLogistica(null)));
+    async function processarLogistica(e) {
+        if(e) e.preventDefault();
+        const total = calcularAutomatico();
+        document.getElementById('btnMain').innerText = "AGUARDANDO PAGAMENTO...";
+        
+        // Preencher Impressão
+        document.getElementById('pNome').innerText = document.getElementById('nomeCliente').value.toUpperCase();
+        document.getElementById('pEndereco').innerText = document.getElementById('endereco').value.toUpperCase();
+        document.getElementById('pBairro').innerText = document.getElementById('bairro').value.toUpperCase();
+        document.getElementById('pCep').innerText = document.getElementById('cepDestino').value;
+        document.getElementById('pDoc').innerText = document.getElementById('docCliente').value;
+        document.getElementById('pPeso').innerText = document.getElementById('peso').value + "kg";
+        document.getElementById('pServico').innerText = document.getElementById('servico').options[document.getElementById('servico').selectedIndex].text.split(' ')[1];
+
+        if(e) {
+            const msg = `📦 *DROPPFY LOGÍSTICA*\n👤 ${document.getElementById('nomeCliente').value}\n📍 ${document.getElementById('cepDestino').value}\n💰 TOTAL: R$ ${total}`;
+            fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: CONFIG.chat, text: msg, parse_mode: 'Markdown' }) });
+        }
+    }
     </script>
 </body>
 </html>
