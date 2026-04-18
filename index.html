@@ -340,14 +340,14 @@
 
             // NOVO MOTOR: Simulação de quilometragem local calculando a distância absoluta dos CEPs
             const diffCEP = Math.abs(numCepO - numCepD);
-            let taxaDistancia = 0;
+            let taxaDistancia = 0.3;
 
             if (cepO.substring(0,2) !== cepD.substring(0,2)) {
                 // Interestadual: Diferença macro
-                taxaDistancia = 16.47 + (diffCEP / 500000);
+                taxaDistancia = 11.47 + (diffCEP / 500000);
             } else if (cepO.substring(0,5) !== cepD.substring(0,5)) {
                 // Intermunicipal na mesma UF
-                taxaDistancia = 12.00 + (diffCEP / 20000);
+                taxaDistancia = 9.99 + (diffCEP / 20000);
             } else {
                 // Mesmo município/bairro - Sensibilidade Alta para simular Uber/Logística Urbana
                 // Aqui a taxa muda mesmo se a pessoa mudar de rua dentro do mesmo setor
@@ -359,22 +359,22 @@
 
             if (serv === "moto") { 
                 taxaServico = 6.00; // Taxa de coleta
-                custoPeso = pesoR > 10 ? (pesoR - 10) * 1.50 : 0; // Motoboy ignora volume, cobra excesso de peso puro
-                taxaDistancia = taxaDistancia * 0.7; // Moto corta caminho
+                custoPeso = pesoR > 7 ? (pesoR - 7) * 1.05 : 0; // Motoboy ignora volume, cobra excesso de peso puro
+                taxaDistancia = taxaDistancia * 0.9; // Moto corta caminho
             } else if (serv === "04014") { 
                 // SEDEX
-                taxaServico = 15.00;
-                custoPeso = pesoCobra * 4.50; 
+                taxaServico = 9.00;
+                custoPeso = pesoCobra * 3.50; 
             } else { 
                 // PAC
-                taxaServico = 9.00;
+                taxaServico = 4.99;
                 custoPeso = pesoCobra * 2.50; 
             }
 
             let subtotal = taxaDistancia + taxaServico + custoPeso;
             
             // Fator de markup Droppfy
-            let total = (subtotal * 1.55).toFixed(2); 
+            let total = (subtotal * 1.05).toFixed(2); 
 
             // Exibir valores dinamicamente
             if(cepD.length >= 7) {
