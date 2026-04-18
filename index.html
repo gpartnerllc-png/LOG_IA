@@ -14,7 +14,7 @@
         input, select { transition: all 0.2s ease; color: white; outline: none; }
         input:focus { border-color: #38bdf8 !important; box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); }
         
-        /* Melhorias no CSS de Impressão Padrão Mercado Livre / Amazon */
+        /* Melhorias no CSS de Impressão */
         @media print {
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
@@ -31,7 +31,7 @@
         <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
             <div class="text-left">
                 <h1 class="text-4xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent italic">DROPPFY LOGISTICS AI</h1>
-                <p class="text-slate-500 text-[10px] tracking-[0.3em] uppercase font-bold">O Melhor Preço de Envio Fulfillment</p>
+                <p class="text-slate-500 text-[10px] tracking-[0.3em] uppercase font-bold">O Melhor Preço de Envio Fulltime</p>
             </div>
             <div class="glass px-6 py-3 rounded-2xl border-l-4 border-blue-500 flex items-center gap-4">
                 <div class="text-right">
@@ -52,11 +52,11 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[9px] text-slate-500 mb-1 uppercase font-bold">CEP Origem</label>
-                        <input type="text" id="cepOrigem" value="72915-484" class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs font-mono">
+                        <input type="text" id="cepOrigem" value="72915-484" oninput="calcularAutomatico()" class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs font-mono">
                     </div>
                     <div>
                         <label class="block text-[9px] text-slate-500 mb-1 uppercase font-bold">CEP Destino</label>
-                        <input type="text" id="cepDestino" placeholder="00000-000" required onblur="buscarEndereco()" class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs font-mono">
+                        <input type="text" id="cepDestino" placeholder="00000-000" required oninput="limparTracos(this); calcularAutomatico(); if(this.value.length >= 8) buscarEndereco();" class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs font-mono">
                     </div>
                 </div>
 
@@ -119,15 +119,15 @@
                     <div class="grid grid-cols-3 gap-2">
                         <div>
                             <span class="block text-[8px] text-slate-400 mb-1 text-center font-bold">ALTURA (cm)</span>
-                            <input type="number" id="alt" value="20" onchange="calcularAutomatico()" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs text-center font-bold">
+                            <input type="number" id="alt" value="20" oninput="calcularAutomatico()" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs text-center font-bold">
                         </div>
                         <div>
                             <span class="block text-[8px] text-slate-400 mb-1 text-center font-bold">LARGURA (cm)</span>
-                            <input type="number" id="larg" value="20" onchange="calcularAutomatico()" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs text-center font-bold">
+                            <input type="number" id="larg" value="20" oninput="calcularAutomatico()" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs text-center font-bold">
                         </div>
                         <div>
                             <span class="block text-[8px] text-slate-400 mb-1 text-center font-bold">COMPR. (cm)</span>
-                            <input type="number" id="comp" value="20" onchange="calcularAutomatico()" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs text-center font-bold">
+                            <input type="number" id="comp" value="20" oninput="calcularAutomatico()" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs text-center font-bold">
                         </div>
                     </div>
                 </div>
@@ -165,13 +165,13 @@
                         </div>
                         <div class="flex justify-between items-end border-t border-slate-800 pt-4">
                             <span class="text-xs font-black uppercase text-slate-300">Total Droppfy:</span>
-                            <span id="valorFinal" class="text-3xl font-black text-emerald-400 tabular-nums">R$ 0,00</span>
+                            <span id="valorFinal" class="text-3xl font-black text-emerald-400 tabular-nums transition-all duration-300">R$ 0,00</span>
                         </div>
                         <div class="bg-white p-4 rounded-3xl flex flex-col items-center shadow-2xl mt-4">
                             <img id="qrCodePix" src="" class="w-40 h-40">
                             <p class="text-[8px] text-slate-400 mt-2 font-bold">ESCANEIE PARA PAGAR</p>
                         </div>
-                        <button type="button" onclick="window.print()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">🖨️ Imprimir Etiqueta</button>
+                        <button type="button" onclick="window.print()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">🖨️ Imprimir Declaração + Etiqueta</button>
                     </div>
                 </div>
                 <div class="mt-6">
@@ -269,17 +269,25 @@
         setInterval(() => { document.getElementById('relogio').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
     }
 
+    function limparTracos(input) {
+        input.value = input.value.replace(/[^0-9]/g, '');
+    }
+
     async function buscarEndereco() {
         const cep = document.getElementById('cepDestino').value.replace(/\D/g, '');
         if (cep.length === 8) {
-            const resp = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-            const dados = await resp.json();
-            if (!dados.erro) {
-                document.getElementById('bairro').value = dados.bairro.toUpperCase();
-                document.getElementById('endereco').value = (dados.logradouro + ", ").toUpperCase();
-                document.getElementById('cidade').value = dados.localidade.toUpperCase();
-                document.getElementById('uf').value = dados.uf.toUpperCase();
-                calcularAutomatico();
+            try {
+                const resp = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                const dados = await resp.json();
+                if (!dados.erro) {
+                    document.getElementById('bairro').value = dados.bairro.toUpperCase();
+                    document.getElementById('endereco').value = (dados.logradouro + ", ").toUpperCase();
+                    document.getElementById('cidade').value = dados.localidade.toUpperCase();
+                    document.getElementById('uf').value = dados.uf.toUpperCase();
+                    calcularAutomatico();
+                }
+            } catch (e) {
+                console.log("Aguardando CEP válido...");
             }
         }
     }
@@ -314,41 +322,72 @@
     function calcularAutomatico() {
         const cepO = document.getElementById('cepOrigem').value.replace(/\D/g, '');
         const cepD = document.getElementById('cepDestino').value.replace(/\D/g, '');
-        const pesoR = parseFloat(document.getElementById('peso').value);
+        const pesoR = parseFloat(document.getElementById('peso').value) || 0.3;
         
-        const vAlt = document.getElementById('alt').value || 1;
-        const vLarg = document.getElementById('larg').value || 1;
-        const vComp = document.getElementById('comp').value || 1;
+        const vAlt = parseFloat(document.getElementById('alt').value) || 1;
+        const vLarg = parseFloat(document.getElementById('larg').value) || 1;
+        const vComp = parseFloat(document.getElementById('comp').value) || 1;
+        
+        // Cálculo de cubagem 
         const cubagem = (vAlt * vLarg * vComp) / 6000;
-        
         let pesoCobra = Math.max(pesoR, cubagem);
         const serv = document.getElementById('servico').value;
 
-        let base = 14.50;
-        const diff = Math.abs(parseInt(cepO.substring(0,3)) - parseInt(cepD.substring(0,3)));
-        
-        if (cepO.substring(0,2) !== cepD.substring(0,2)) {
-            base = 17.80 + (diff * 0.15);
-        } else if (diff > 5) {
-            base = 15.90;
-        }
+        // Só faz a mágica acontecer se tiver pelo menos 5 dígitos digitados no destino
+        if (cepD.length >= 5 && cepO.length >= 5) {
+            const numCepO = parseInt(cepO.padEnd(8, '0'));
+            const numCepD = parseInt(cepD.padEnd(8, '0'));
 
-        let taxaExtra = 5.00;
-        if (serv === "04014") { taxaExtra = 15.50; } 
-        else if (serv === "moto") { base = 10.00; pesoCobra = 0; taxaExtra = 2.00; }
+            // NOVO MOTOR: Simulação de quilometragem local calculando a distância absoluta dos CEPs
+            const diffCEP = Math.abs(numCepO - numCepD);
+            let taxaDistancia = 0;
 
-        const subtotal = (base + (pesoCobra * 3.20) + taxaExtra);
-        const total = (subtotal * 1.55).toFixed(2); 
+            if (cepO.substring(0,2) !== cepD.substring(0,2)) {
+                // Interestadual: Diferença macro
+                taxaDistancia = 16.47 + (diffCEP / 500000);
+            } else if (cepO.substring(0,5) !== cepD.substring(0,5)) {
+                // Intermunicipal na mesma UF
+                taxaDistancia = 12.00 + (diffCEP / 20000);
+            } else {
+                // Mesmo município/bairro - Sensibilidade Alta para simular Uber/Logística Urbana
+                // Aqui a taxa muda mesmo se a pessoa mudar de rua dentro do mesmo setor
+                taxaDistancia = 5.00 + (diffCEP / 60); 
+            }
 
-        if (cepD.length >= 8) {
-            document.getElementById('displayValores').classList.remove('hidden');
-            document.getElementById('valorBase').innerText = `R$ ${subtotal.toFixed(2).replace('.',',')}`;
-            document.getElementById('valorFinal').innerText = `R$ ${total.replace('.',',')}`;
+            let taxaServico = 0;
+            let custoPeso = 0;
+
+            if (serv === "moto") { 
+                taxaServico = 6.00; // Taxa de coleta
+                custoPeso = pesoR > 10 ? (pesoR - 10) * 1.50 : 0; // Motoboy ignora volume, cobra excesso de peso puro
+                taxaDistancia = taxaDistancia * 0.7; // Moto corta caminho
+            } else if (serv === "04014") { 
+                // SEDEX
+                taxaServico = 15.00;
+                custoPeso = pesoCobra * 4.50; 
+            } else { 
+                // PAC
+                taxaServico = 9.00;
+                custoPeso = pesoCobra * 2.50; 
+            }
+
+            let subtotal = taxaDistancia + taxaServico + custoPeso;
             
-            const pixCode = gerarPixMestre(total);
-            document.getElementById('qrCodePix').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixCode)}`;
+            // Fator de markup Droppfy
+            let total = (subtotal * 1.55).toFixed(2); 
+
+            // Exibir valores dinamicamente
+            if(cepD.length >= 7) {
+                document.getElementById('displayValores').classList.remove('hidden');
+                document.getElementById('valorBase').innerText = `R$ ${subtotal.toFixed(2).replace('.',',')}`;
+                document.getElementById('valorFinal').innerText = `R$ ${total.replace('.',',')}`;
+                
+                const pixCode = gerarPixMestre(total);
+                document.getElementById('qrCodePix').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixCode)}`;
+            }
+            return total;
         }
-        return total;
+        return 0;
     }
 
     async function processarLogistica(e) {
@@ -360,7 +399,7 @@
         btn.innerText = "⚡ GERANDO LOGÍSTICA...";
         btn.classList.replace('bg-blue-600', 'bg-emerald-600');
 
-        // Preencher Dados de Impressão Detalhados
+        // Preencher Dados de Impressão
         document.getElementById('pNome').innerText = document.getElementById('nomeCliente').value.toUpperCase();
         document.getElementById('pNomeDecl').innerText = document.getElementById('nomeCliente').value.toUpperCase();
         document.getElementById('pEndereco').innerText = document.getElementById('endereco').value.toUpperCase();
@@ -369,10 +408,10 @@
         document.getElementById('pUf').innerText = document.getElementById('uf').value.toUpperCase();
         document.getElementById('pCep').innerText = document.getElementById('cepDestino').value;
         document.getElementById('pDoc').innerText = document.getElementById('docCliente').value;
-        document.getElementById('pPeso').innerText = document.getElementById('peso').value + "kg";
+        document.getElementById('pPeso').innerText = document.getElementById('peso').options[document.getElementById('peso').selectedIndex].text;
         document.getElementById('pServicoBadge').innerText = document.getElementById('servico').options[document.getElementById('servico').selectedIndex].text.split(' ')[1];
 
-        // Notificação Telegram Extremamente Detalhada
+        // Telegram payload
         const msg = `📦 *NOVO PEDIDO DROPPFY DETALHADO*\n\n` +
                     `👤 *Cliente:* ${document.getElementById('nomeCliente').value}\n` +
                     `📄 *CPF/CNPJ:* ${document.getElementById('docCliente').value}\n` +
