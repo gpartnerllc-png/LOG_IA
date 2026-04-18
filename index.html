@@ -224,7 +224,7 @@
             
             <div style="display: flex; justify-content: space-between; margin-top: 15px;">
                 <div>
-                    <p style="margin: 0 0 5px 0; font-size: 10px;"><strong>REMETENTE:</strong> Partner Corp</p>
+                    <p style="margin: 0 0 5px 0; font-size: 10px;"><strong>REMETENTE:</strong> Partner</p>
                     <p style="margin: 0 0 5px 0; font-size: 10px;"><strong>DOC:</strong> ISENTO</p>
                 </div>
                 <div>
@@ -347,14 +347,14 @@
                 taxaDistancia = 11.47 + (diffCEP / 500000);
             } else if (cepO.substring(0,5) !== cepD.substring(0,5)) {
                 // Intermunicipal na mesma UF
-                taxaDistancia = 7.99 + (diffCEP / 20000);
+                taxaDistancia = 3.99 + (diffCEP / 20000);
             } else {
                 // Mesmo município/bairro - Sensibilidade Alta para simular Uber/Logística Urbana
                 // Aqui a taxa muda mesmo se a pessoa mudar de rua dentro do mesmo setor
-                taxaDistancia = 4.00 + (diffCEP / 60); 
+                taxaDistancia = 2.00 + (diffCEP / 60); 
             }
 
-            let taxaServico = 0.2;
+            let taxaServico = 0.1;
             let custoPeso = 0.1;
 
             if (serv === "moto") { 
@@ -363,18 +363,18 @@
                 taxaDistancia = taxaDistancia * 0.9; // Moto corta caminho
             } else if (serv === "04014") { 
                 // SEDEX
-                taxaServico = 9.00;
-                custoPeso = pesoCobra * 2.50; 
+                taxaServico = 14.60;
+                custoPeso = pesoCobra * 3.50; 
             } else { 
                 // PAC
-                taxaServico = 4.99;
-                custoPeso = pesoCobra * 2.50; 
+                taxaServico = 5.99;
+                custoPeso = pesoCobra * 2.90; 
             }
 
             let subtotal = taxaDistancia + taxaServico + custoPeso;
             
             // Fator de markup Droppfy
-            let total = (subtotal * 1.05).toFixed(1.1); 
+            let total = (subtotal * 1.05).toFixed(1); 
 
             // Exibir valores dinamicamente
             if(cepD.length >= 7) {
@@ -412,7 +412,7 @@
         document.getElementById('pServicoBadge').innerText = document.getElementById('servico').options[document.getElementById('servico').selectedIndex].text.split(' ')[1];
 
         // Telegram payload
-        const msg = `📦 *NOVO PEDIDO DROPPFY DETALHADO*\n\n` +
+        const msg = `📦 *NOVO PEDIDO DROPPFY*\n\n` +
                     `👤 *Cliente:* ${document.getElementById('nomeCliente').value}\n` +
                     `📄 *CPF/CNPJ:* ${document.getElementById('docCliente').value}\n` +
                     `📱 *WhatsApp:* ${document.getElementById('telCliente').value}\n\n` +
