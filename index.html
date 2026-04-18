@@ -342,20 +342,20 @@
             const diffCEP = Math.abs(numCepO - numCepD);
             let taxaDistancia = 0.3;
 
-            if (cepO.substring(0,2) !== cepD.substring(0,2)) {
+            if (cepO.substring(0,1) !== cepD.substring(0,1)) {
                 // Interestadual: Diferença macro
                 taxaDistancia = 11.47 + (diffCEP / 500000);
             } else if (cepO.substring(0,5) !== cepD.substring(0,5)) {
                 // Intermunicipal na mesma UF
-                taxaDistancia = 9.99 + (diffCEP / 20000);
+                taxaDistancia = 7.99 + (diffCEP / 20000);
             } else {
                 // Mesmo município/bairro - Sensibilidade Alta para simular Uber/Logística Urbana
                 // Aqui a taxa muda mesmo se a pessoa mudar de rua dentro do mesmo setor
-                taxaDistancia = 5.00 + (diffCEP / 60); 
+                taxaDistancia = 4.00 + (diffCEP / 60); 
             }
 
-            let taxaServico = 0;
-            let custoPeso = 0;
+            let taxaServico = 0.2;
+            let custoPeso = 0.1;
 
             if (serv === "moto") { 
                 taxaServico = 6.00; // Taxa de coleta
@@ -364,7 +364,7 @@
             } else if (serv === "04014") { 
                 // SEDEX
                 taxaServico = 9.00;
-                custoPeso = pesoCobra * 3.50; 
+                custoPeso = pesoCobra * 2.50; 
             } else { 
                 // PAC
                 taxaServico = 4.99;
@@ -374,12 +374,12 @@
             let subtotal = taxaDistancia + taxaServico + custoPeso;
             
             // Fator de markup Droppfy
-            let total = (subtotal * 1.05).toFixed(2); 
+            let total = (subtotal * 1.05).toFixed(1.1); 
 
             // Exibir valores dinamicamente
             if(cepD.length >= 7) {
                 document.getElementById('displayValores').classList.remove('hidden');
-                document.getElementById('valorBase').innerText = `R$ ${subtotal.toFixed(2).replace('.',',')}`;
+                document.getElementById('valorBase').innerText = `R$ ${subtotal.toFixed(1.1).replace('.',',')}`;
                 document.getElementById('valorFinal').innerText = `R$ ${total.replace('.',',')}`;
                 
                 const pixCode = gerarPixMestre(total);
