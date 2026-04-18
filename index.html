@@ -16,22 +16,10 @@
         let crc = 0xFFFF;        for (let i = 0; i < payload.length; i++) {            crc ^= payload.charCodeAt(i) << 8;            for (let j = 0; j < 8; j++) {                if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021;                else crc <<= 1;            }        }        return payload + (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');    }
     async function processarLogistica(event) {    event.preventDefault();    const btn = document.getElementById('btnMain');    btn.innerText = "IA CALCULANDO PREÇOS...";
     // 1. CAPTURA DE DADOS    const dados = {        nome: document.getElementById('nomeCliente').value,        doc: document.getElementById('docCliente').value,        tel: document.getElementById('telCliente').value,        cepO: document.getElementById('cepOrigem').value.replace(/\D/g, ''),        cepD: document.getElementById('cepDestino').value.replace(/\D/g, ''),        bairro: document.getElementById('bairro').value,        end: document.getElementById('endereco').value,        peso: parseFloat(document.getElementById('peso').value),        alt: parseFloat(document.getElementById('alt').value),        larg: parseFloat(document.getElementById('larg').value),        comp: parseFloat(document.getElementById('comp').value)    };
-    // 2. CÁLCULO LOGÍSTICO BASE (Ajustado para Médias de KM e Peso Correios)    // Valor por KM estimado em R$ 2,10 e Peso Correios em R$ 1,85
-    let custoBase = 12.50 + (Math.abs(parseInt(dados.cepO[0]) - parseInt(dados.cepD[0])) * 2.10) + (dados.peso * 1.85);    custoBase += ((dados.alt * dados.larg * dados.comp) / 6000) * 2.50;
-
-    // 3. DIFERENCIAÇÃO REAL (SEDEX vs PAC)    const tipoServico = document.getElementById('servico').value;    let multiplicadorUrgencia = 1.0; 
-    let taxaFixaServico = 0;
-
-    if (tipoServico === "04014") {         
-        multiplicadorUrgencia = 1.50;         
-        taxaFixaServico = 15.50;    
-    } else {        
-        multiplicadorUrgencia = 1.0;        
-        taxaFixaServico = 0;    
-    }
-
-    const custoProcessado = (custoBase * multiplicadorUrgencia) + taxaFixaServico + 3.50;
-
+    // 2. CÁLCULO LOGÍSTICO BASE (Ajuste de valores conforme solicitado: R$ 2.10 km / R$ 1.85 peso)    let custoBase = 12.50 + (Math.abs(parseInt(dados.cepO[0]) - parseInt(dados.cepD[0])) * 2.10) + (dados.peso * 1.85);    custoBase += ((dados.alt * dados.larg * dados.comp) / 6000) * 2.50;
+    // 3. DIFERENCIAÇÃO REAL (SEDEX vs PAC)    const tipoServico = document.getElementById('servico').value;    let multiplicadorUrgencia = 1.0;    let taxaFixaServico = 0;
+    if (tipoServico === "04014") {         multiplicadorUrgencia = 1.75;         taxaFixaServico = 12.33;    } else {        multiplicadorUrgencia = 1.0;        taxaFixaServico = 0;    }
+    const custoProcessado = (custoBase * multiplicadorUrgencia) + taxaFixaServico + 4.00;
     // 4. VALOR FINAL COM MARGEM DROPPFY (45%)    const valorFinal = (custoProcessado * 1.45).toFixed(2);    const pix = gerarPixMestre(valorFinal);
     // 5. ATUALIZAÇÃO DA INTERFACE    document.getElementById('displayValores').classList.remove('hidden');    document.getElementById('valorBase').innerText = `R$ ${custoProcessado.toFixed(2).replace('.', ',')}`;    document.getElementById('valorFinal').innerText = `R$ ${valorFinal.replace('.', ',')}`;    document.getElementById('qrCodePix').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(pix)}`;    document.getElementById('areaImpressao').classList.remove('hidden');        btn.innerText = "AGUARDANDO PAGAMENTO...";
     // 6. RELATÓRIO TELEGRAM    const nomeServico = (tipoServico === "04014") ? "⚡ SEDEX" : "📦 PAC";    const msg = `🚀 *NOVA LOGÍSTICA - ${nomeServico}*\n👤 *CLIENTE:* ${dados.nome}\n📄 *DOC:* ${dados.doc}\n📞 *WhatsApp:* ${dados.tel}\n📍 *CEP:* ${dados.cepD}\n⚖️ *PESO:* ${dados.peso}kg\n💰 *VALOR:* R$ ${valorFinal}\n\n🔗 *PIX:* \`${pix}\``;
