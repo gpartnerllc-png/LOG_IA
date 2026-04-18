@@ -14,12 +14,14 @@
         input, select { transition: all 0.2s ease; color: white; outline: none; }
         input:focus { border-color: #38bdf8 !important; box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); }
         
+        /* Melhorias no CSS de Impressão Padrão Mercado Livre / Amazon */
         @media print {
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
             #printArea { position: absolute; left: 0; top: 0; width: 100%; display: flex !important; flex-direction: row !important; justify-content: space-between; gap: 10px; padding: 0; color: black; }
-            .print-card { border: 2px solid #000; padding: 12px; width: 48%; height: 520px; font-size: 11px; display: flex; flex-direction: column; box-sizing: border-box; background: white !important; }
-            .bg-black-print { background: black !important; color: white !important; -webkit-print-color-adjust: exact; }
+            .print-card { border: 2px solid #000; padding: 15px; width: 48%; height: 520px; font-size: 12px; display: flex; flex-direction: column; box-sizing: border-box; background: white !important; font-family: Arial, sans-serif; position: relative; }
+            .bg-black-print { background: black !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .barcode-placeholder { width: 80%; height: 50px; background: repeating-linear-gradient(90deg, #000, #000 2px, #fff 2px, #fff 4px, #000 4px, #000 5px, #fff 5px, #fff 8px); margin: 10px auto; }
         }
     </style>
 </head>
@@ -29,7 +31,7 @@
         <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
             <div class="text-left">
                 <h1 class="text-4xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent italic">DROPPFY LOGISTICS AI</h1>
-                <p class="text-slate-500 text-[10px] tracking-[0.3em] uppercase font-bold">O Melhor Preço de Envio FullTime</p>
+                <p class="text-slate-500 text-[10px] tracking-[0.3em] uppercase font-bold">O Melhor Preço de Envio Fulfillment</p>
             </div>
             <div class="glass px-6 py-3 rounded-2xl border-l-4 border-blue-500 flex items-center gap-4">
                 <div class="text-right">
@@ -46,6 +48,7 @@
                 <h2 class="text-sm font-black uppercase tracking-widest flex items-center text-blue-400">
                     <span class="bg-blue-500/20 p-2 rounded-lg mr-3">📍</span> Destinação Detalhada
                 </h2>
+                
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[9px] text-slate-500 mb-1 uppercase font-bold">CEP Origem</label>
@@ -56,27 +59,42 @@
                         <input type="text" id="cepDestino" placeholder="00000-000" required onblur="buscarEndereco()" class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs font-mono">
                     </div>
                 </div>
+
                 <div>
                     <label class="block text-[9px] text-slate-500 mb-1 uppercase font-bold">Nome Completo</label>
                     <input type="text" id="nomeCliente" required class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs uppercase font-semibold">
                 </div>
-                <div>
-                    <label class="block text-[9px] text-slate-500 mb-1 uppercase font-bold">CPF ou CNPJ</label>
-                    <input type="text" id="docCliente" required placeholder="000.000.000-00" class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs">
-                </div>
+                
                 <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[9px] text-slate-500 mb-1 uppercase font-bold">CPF ou CNPJ</label>
+                        <input type="text" id="docCliente" required placeholder="000.000.000-00" class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs">
+                    </div>
                     <div>
                         <label class="block text-[9px] text-slate-500 mb-1 uppercase font-bold">WhatsApp</label>
                         <input type="text" id="telCliente" required class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs">
                     </div>
-                    <div>
-                        <label class="block text-[9px] text-slate-500 mb-1 uppercase font-bold">Bairro</label>
-                        <input type="text" id="bairro" required class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs uppercase">
-                    </div>
                 </div>
+
                 <div>
                     <label class="block text-[9px] text-slate-500 mb-1 uppercase font-bold">Endereço e Número</label>
                     <input type="text" id="endereco" required class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs uppercase">
+                </div>
+
+                <div>
+                    <label class="block text-[9px] text-slate-500 mb-1 uppercase font-bold">Bairro</label>
+                    <input type="text" id="bairro" required class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs uppercase">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[9px] text-slate-500 mb-1 uppercase font-bold">Cidade</label>
+                        <input type="text" id="cidade" required class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs uppercase">
+                    </div>
+                    <div>
+                        <label class="block text-[9px] text-slate-500 mb-1 uppercase font-bold">UF</label>
+                        <input type="text" id="uf" required class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs uppercase text-center" maxlength="2">
+                    </div>
                 </div>
             </div>
 
@@ -84,6 +102,7 @@
                 <h2 class="text-sm font-black uppercase tracking-widest flex items-center text-emerald-400">
                     <span class="bg-emerald-500/20 p-2 rounded-lg mr-3">📦</span> Droppfy Packing
                 </h2>
+                
                 <div class="grid grid-cols-2 gap-3">
                     <div class="p-4 border border-blue-500/20 rounded-2xl bg-blue-500/5">
                         <p class="text-[8px] text-blue-400 uppercase font-black mb-1">Sugestão de Caixa</p>
@@ -91,17 +110,28 @@
                     </div>
                     <div class="p-4 border border-emerald-500/20 rounded-2xl bg-emerald-500/5">
                         <p class="text-[8px] text-emerald-400 uppercase font-black mb-1">Segurança</p>
-                        <p class="text-xs font-bold text-white">SSL</p>
+                        <p class="text-xs font-bold text-white">SSL-AES</p>
                     </div>
                 </div>
+                
                 <div>
-                    <label class="block text-[9px] text-slate-500 mb-2 uppercase font-bold">Dimensões do Pacote (cm)</label>
+                    <label class="block text-[9px] text-slate-500 mb-2 uppercase font-bold">Dimensões do Pacote</label>
                     <div class="grid grid-cols-3 gap-2">
-                        <input type="number" id="alt" value="20" onchange="calcularAutomatico()" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs text-center font-bold">
-                        <input type="number" id="larg" value="20" onchange="calcularAutomatico()" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs text-center font-bold">
-                        <input type="number" id="comp" value="20" onchange="calcularAutomatico()" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs text-center font-bold">
+                        <div>
+                            <span class="block text-[8px] text-slate-400 mb-1 text-center font-bold">ALTURA (cm)</span>
+                            <input type="number" id="alt" value="20" onchange="calcularAutomatico()" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs text-center font-bold">
+                        </div>
+                        <div>
+                            <span class="block text-[8px] text-slate-400 mb-1 text-center font-bold">LARGURA (cm)</span>
+                            <input type="number" id="larg" value="20" onchange="calcularAutomatico()" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs text-center font-bold">
+                        </div>
+                        <div>
+                            <span class="block text-[8px] text-slate-400 mb-1 text-center font-bold">COMPR. (cm)</span>
+                            <input type="number" id="comp" value="20" onchange="calcularAutomatico()" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs text-center font-bold">
+                        </div>
                     </div>
                 </div>
+                
                 <div>
                     <label class="block text-[9px] text-slate-500 mb-2 uppercase font-bold">Peso Estimado</label>
                     <select id="peso" onchange="calcularAutomatico()" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs font-bold uppercase">
@@ -112,6 +142,7 @@
                         <option value="30">Até 30kg</option>
                     </select>
                 </div>
+                
                 <div>
                     <label class="block text-[9px] text-slate-500 mb-2 uppercase font-bold">Serviço de Envio</label>
                     <select id="servico" onchange="calcularAutomatico()" class="w-full bg-slate-900 p-4 rounded-xl border border-blue-500/50 text-xs font-black text-blue-400 uppercase">
@@ -140,7 +171,7 @@
                             <img id="qrCodePix" src="" class="w-40 h-40">
                             <p class="text-[8px] text-slate-400 mt-2 font-bold">ESCANEIE PARA PAGAR</p>
                         </div>
-                        <button type="button" onclick="window.print()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">🖨️ Imprimir Declaração + Etiqueta</button>
+                        <button type="button" onclick="window.print()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">🖨️ Imprimir Etiqueta</button>
                     </div>
                 </div>
                 <div class="mt-6">
@@ -153,7 +184,7 @@
         <footer class="mt-12 border-t border-slate-800 pt-8 pb-12 flex flex-col md:flex-row justify-between items-center gap-6 opacity-60">
             <div class="text-[9px] font-bold uppercase tracking-widest text-slate-500">
                 <p>© 2026 Droppfy by Partner - Todos os Direitos Reservados</p>
-                <p>CNPJ: 47.149.826/0001-80 | Inscrição Estadual: 109483928</p>
+                <p>CNPJ: 47.149.826/0001-80 | Inscrição Estadual: 10.948.392-8</p>
             </div>
             <div class="flex gap-4">
                 <img src="https://images.yampi.me/assets/stores/droppfy/uploads/icon/65f3d8c635540.png" class="h-6 w-6">
@@ -164,35 +195,62 @@
 
     <div id="printArea" class="hidden">
         <div class="print-card">
-            <div style="display: flex; justify-content: space-between; border-bottom: 3px solid #000; padding-bottom: 10px;">
-                <h1 style="font-size: 26px; font-weight: 900; margin: 0;">DROPPFY</h1>
-                <div class="bg-black-print" style="padding: 10px 20px;"><span id="pServico" style="font-size: 20px; font-weight: 900;">SEDEX</span></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #000; padding-bottom: 8px;">
+                <h1 style="font-size: 22px; font-weight: 900; margin: 0; letter-spacing: -1px;">DROPPFY <span style="font-size: 10px; font-weight: normal;">Logistics</span></h1>
+                <div class="bg-black-print" style="padding: 6px 16px; border-radius: 4px;"><span id="pServicoBadge" style="font-size: 16px; font-weight: 900;">SEDEX</span></div>
             </div>
-            <div style="background: black; height: 50px; margin: 15px 0;"></div>
-            <div style="flex-grow: 1;">
+            
+            <div style="text-align: center; margin: 15px 0;">
+                <div class="barcode-placeholder"></div>
+                <div style="font-size: 10px; font-weight: bold; margin-top: 5px;">TRACKING: DROPPFY-BR-LOG-AI</div>
+            </div>
+
+            <div style="border: 2px solid #000; border-radius: 6px; padding: 12px; margin-bottom: 15px; flex-grow: 1;">
+                <h3 style="margin: 0 0 8px 0; font-size: 12px; border-bottom: 1px solid #ccc; padding-bottom: 4px; color: #333;">DESTINATÁRIO</h3>
                 <p style="font-size: 16px; font-weight: 900; margin-bottom: 5px;" id="pNome">--</p>
-                <p id="pEndereco">--</p>
-                <p id="pBairro">--</p>
-                <strong>CEP: <span id="pCep">--</span></strong>
+                <p style="font-size: 13px; margin-bottom: 3px;" id="pEndereco">--</p>
+                <p style="font-size: 13px; margin-bottom: 8px;"><span id="pBairro">--</span> | <span id="pCidade">--</span> - <span id="pUf">--</span></p>
+                <p style="font-size: 16px; font-weight: 900; background: #eee; padding: 4px; display: inline-block;">CEP: <span id="pCep">--</span></p>
             </div>
-            <div style="border-top: 2px dashed #000; padding-top: 10px; font-size: 9px;">
-                <p><strong>REMETENTE:</strong> Partner Corp - Águas Lindas de Goiás-GO | 72915-484</p>
+
+            <div style="border-top: 2px dashed #000; padding-top: 10px; font-size: 10px; position: absolute; bottom: 15px; left: 15px; right: 15px;">
+                <p style="margin: 0 0 3px 0;"><strong>REMETENTE:</strong> Partner - Droppfy Fulfillment</p>
+                <p style="margin: 0;">Águas Lindas de Goiás-GO | CEP: 72915-484</p>
             </div>
         </div>
+
         <div class="print-card">
-            <h2 style="text-align: center; border-bottom: 2px solid #000;">DECLARAÇÃO DE CONTEÚDO</h2>
-            <p style="margin-top: 10px;"><strong>DOC:</strong> <span id="pDoc">--</span></p>
+            <h2 style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-top: 0;">DECLARAÇÃO DE CONTEÚDO</h2>
+            
+            <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+                <div>
+                    <p style="margin: 0 0 5px 0; font-size: 10px;"><strong>REMETENTE:</strong> Partner Corp</p>
+                    <p style="margin: 0 0 5px 0; font-size: 10px;"><strong>DOC:</strong> ISENTO</p>
+                </div>
+                <div>
+                    <p style="margin: 0 0 5px 0; font-size: 10px;"><strong>DESTINATÁRIO:</strong> <span id="pNomeDecl">--</span></p>
+                    <p style="margin: 0 0 5px 0; font-size: 10px;"><strong>DOC:</strong> <span id="pDoc">--</span></p>
+                </div>
+            </div>
+
             <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-                <tr style="background: #eee; border: 1px solid #000;">
-                    <th style="padding: 5px;">DESCRIÇÃO</th>
-                    <th style="padding: 5px;">PESO</th>
+                <tr style="background: #f0f0f0; border: 1px solid #000;">
+                    <th style="padding: 8px; text-align: left; border: 1px solid #000;">DESCRIÇÃO DOS ITENS</th>
+                    <th style="padding: 8px; text-align: center; border: 1px solid #000;">PESO</th>
                 </tr>
                 <tr>
-                    <td style="padding: 10px; border: 1px solid #000;">Serviço de Logística Droppfy</td>
-                    <td style="padding: 10px; border: 1px solid #000; text-align: center;" id="pPeso">--</td>
+                    <td style="padding: 12px; border: 1px solid #000; font-size: 11px;">Produto de Venda via E-Commerce (Droppfy AI Logistics)</td>
+                    <td style="padding: 12px; border: 1px solid #000; text-align: center; font-weight: bold;" id="pPeso">--</td>
                 </tr>
             </table>
-            <p style="font-size: 8px; margin-top: auto;">Declaro que não sou contribuinte do ICMS e transporto mercadorias sem fins comerciais imediatos.</p>
+            
+            <div style="margin-top: auto; padding-top: 15px; border-top: 1px solid #ccc;">
+                <p style="font-size: 9px; text-align: justify; line-height: 1.4;">Declaro sob as penas da lei que o conteúdo da encomenda não constitui objeto de circulação mercantil sujeito à tributação de ICMS e transporto mercadorias em conformidade com as normas legais vigentes.</p>
+                <div style="margin-top: 30px; text-align: center;">
+                    <div style="border-bottom: 1px solid #000; width: 60%; margin: 0 auto;"></div>
+                    <p style="font-size: 10px; margin-top: 5px;">Assinatura do Remetente</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -219,12 +277,13 @@
             if (!dados.erro) {
                 document.getElementById('bairro').value = dados.bairro.toUpperCase();
                 document.getElementById('endereco').value = (dados.logradouro + ", ").toUpperCase();
+                document.getElementById('cidade').value = dados.localidade.toUpperCase();
+                document.getElementById('uf').value = dados.uf.toUpperCase();
                 calcularAutomatico();
             }
         }
     }
 
-    // Função Pix Refatorada para ser compatível com todos os bancos (CRC16 manual)
     function gerarPixMestre(v) {
         const f = (id, val) => `${id}${val.length.toString().padStart(2, '0')}${val}`;
         const valStr = parseFloat(v).toFixed(2);
@@ -257,7 +316,6 @@
         const cepD = document.getElementById('cepDestino').value.replace(/\D/g, '');
         const pesoR = parseFloat(document.getElementById('peso').value);
         
-        // Cálculo de Cubagem (Retornado o padrão /6000)
         const vAlt = document.getElementById('alt').value || 1;
         const vLarg = document.getElementById('larg').value || 1;
         const vComp = document.getElementById('comp').value || 1;
@@ -266,7 +324,6 @@
         let pesoCobra = Math.max(pesoR, cubagem);
         const serv = document.getElementById('servico').value;
 
-        // Lógica de Distância Precision Original
         let base = 14.50;
         const diff = Math.abs(parseInt(cepO.substring(0,3)) - parseInt(cepD.substring(0,3)));
         
@@ -278,10 +335,10 @@
 
         let taxaExtra = 5.00;
         if (serv === "04014") { taxaExtra = 15.50; } 
-        else if (serv === "moto") { base = 7.22; pesoCobra = 0; taxaExtra = 2.00; }
+        else if (serv === "moto") { base = 10.00; pesoCobra = 0; taxaExtra = 2.00; }
 
         const subtotal = (base + (pesoCobra * 3.20) + taxaExtra);
-        const total = (subtotal * 1.55).toFixed(2); // Markup de 55%
+        const total = (subtotal * 1.55).toFixed(2); 
 
         if (cepD.length >= 8) {
             document.getElementById('displayValores').classList.remove('hidden');
@@ -298,34 +355,42 @@
         if(e) e.preventDefault();
         const total = calcularAutomatico();
         const btn = document.getElementById('btnMain');
+        const pixPayload = gerarPixMestre(total);
         
         btn.innerText = "⚡ GERANDO LOGÍSTICA...";
         btn.classList.replace('bg-blue-600', 'bg-emerald-600');
 
-        // Preencher Dados de Impressão
+        // Preencher Dados de Impressão Detalhados
         document.getElementById('pNome').innerText = document.getElementById('nomeCliente').value.toUpperCase();
+        document.getElementById('pNomeDecl').innerText = document.getElementById('nomeCliente').value.toUpperCase();
         document.getElementById('pEndereco').innerText = document.getElementById('endereco').value.toUpperCase();
         document.getElementById('pBairro').innerText = document.getElementById('bairro').value.toUpperCase();
+        document.getElementById('pCidade').innerText = document.getElementById('cidade').value.toUpperCase();
+        document.getElementById('pUf').innerText = document.getElementById('uf').value.toUpperCase();
         document.getElementById('pCep').innerText = document.getElementById('cepDestino').value;
         document.getElementById('pDoc').innerText = document.getElementById('docCliente').value;
         document.getElementById('pPeso').innerText = document.getElementById('peso').value + "kg";
-        document.getElementById('pServico').innerText = document.getElementById('servico').options[document.getElementById('servico').selectedIndex].text.split(' ')[1];
+        document.getElementById('pServicoBadge').innerText = document.getElementById('servico').options[document.getElementById('servico').selectedIndex].text.split(' ')[1];
 
-        // Notificação Telegram Melhorada
-        const dados = {
-            nome: document.getElementById('nomeCliente').value,
-            destino: document.getElementById('cepDestino').value,
-            servico: document.getElementById('servico').options[document.getElementById('servico').selectedIndex].text,
-            dim: `${document.getElementById('alt').value}x${document.getElementById('larg').value}x${document.getElementById('comp').value}`
-        };
-
-        const msg = `📦 *NOVO PEDIDO DROPPFY*\n\n` +
-                    `👤 *Cliente:* ${dados.nome}\n` +
-                    `📍 *CEP:* ${dados.destino}\n` +
-                    `🚚 *Serviço:* ${dados.servico}\n` +
-                    `📏 *Dimensões:* ${dados.dim} cm\n` +
+        // Notificação Telegram Extremamente Detalhada
+        const msg = `📦 *NOVO PEDIDO DROPPFY DETALHADO*\n\n` +
+                    `👤 *Cliente:* ${document.getElementById('nomeCliente').value}\n` +
+                    `📄 *CPF/CNPJ:* ${document.getElementById('docCliente').value}\n` +
+                    `📱 *WhatsApp:* ${document.getElementById('telCliente').value}\n\n` +
+                    `📍 *ORIGEM*\n` +
+                    `CEP: ${document.getElementById('cepOrigem').value}\n\n` +
+                    `📍 *DESTINO DO CLIENTE*\n` +
+                    `CEP: ${document.getElementById('cepDestino').value}\n` +
+                    `Endereço: ${document.getElementById('endereco').value}\n` +
+                    `Bairro: ${document.getElementById('bairro').value}\n` +
+                    `Cidade/UF: ${document.getElementById('cidade').value} - ${document.getElementById('uf').value}\n\n` +
+                    `📦 *DETALHES DO PACOTE*\n` +
+                    `Serviço: ${document.getElementById('servico').options[document.getElementById('servico').selectedIndex].text}\n` +
+                    `Dimensões: A:${document.getElementById('alt').value}cm x L:${document.getElementById('larg').value}cm x C:${document.getElementById('comp').value}cm\n` +
+                    `Peso Est.: ${document.getElementById('peso').options[document.getElementById('peso').selectedIndex].text}\n\n` +
                     `💰 *VALOR TOTAL:* R$ ${total}\n\n` +
-                    `🕒 _Aguardando confirmação de pagamento_`;
+                    `🔑 *PIX COPIA E COLA (Pronto para Pagar):*\n` +
+                    `\`${pixPayload}\``;
 
         try {
             await fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, {
