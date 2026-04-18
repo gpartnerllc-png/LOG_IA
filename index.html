@@ -15,6 +15,22 @@
         input:focus { border-color: #38bdf8 !important; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
         .hidden { display: none; }
         .torre-container { max-width: 450px; margin: 0 auto; }
+
+        /* Estilos de Impressão */
+        @media print {
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { 
+                position: absolute; left: 0; top: 0; width: 100%; 
+                display: flex !important; flex-direction: row !important; 
+                gap: 20px; padding: 10px; color: black; background: white;
+            }
+            .print-card { 
+                border: 2px solid #000; padding: 15px; width: 50%; 
+                height: 400px; font-size: 12px; display: flex; flex-direction: column;
+            }
+            .barcode-sim { background: black; height: 40px; width: 100%; margin: 10px 0; }
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -69,77 +85,107 @@
 
             <div class="glass p-5 rounded-2xl space-y-4">
                 <h2 class="text-lg font-semibold flex items-center"><span class="mr-2">📦</span> Packing</h2>
-                
-                <div>
-                    <label class="block text-[9px] text-slate-400 mb-1 uppercase">Dimensões (cm)</label>
-                    <div class="flex gap-2">
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="block text-[8px] text-slate-500 mb-1">ALT (cm)</label>
                         <input type="number" id="alt" value="20" class="recalc w-full bg-slate-900 p-2 rounded border border-slate-700 text-xs text-center">
+                    </div>
+                    <div>
+                        <label class="block text-[8px] text-slate-500 mb-1">LARG (cm)</label>
                         <input type="number" id="larg" value="20" class="recalc w-full bg-slate-900 p-2 rounded border border-slate-700 text-xs text-center">
+                    </div>
+                    <div>
+                        <label class="block text-[8px] text-slate-500 mb-1">COMP (cm)</label>
                         <input type="number" id="comp" value="20" class="recalc w-full bg-slate-900 p-2 rounded border border-slate-700 text-xs text-center">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-[9px] text-slate-400 mb-1 uppercase">Peso e Serviço</label>
                     <select id="peso" class="recalc w-full bg-slate-900 p-2 rounded border border-slate-700 text-xs mb-2">
-                        <option value="0.1">Até 100g</option>
-                        <option value="0.2">Até 200g</option>
                         <option value="0.3">Até 300g</option>
-                        <option value="0.4">Até 400g</option>
-                        <option value="0.5">Até 500g</option>
                         <option value="1">Até 1kg</option>
                         <option value="5">Até 5kg</option>
-                        <option value="10">Até 10kg</option>
-                        <option value="15">Até 15kg</option>
-                        <option value="20">Até 20kg</option>
                     </select>
                     <select id="servico" class="recalc w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-xs">
                         <option value="moto">🏍️ Droppfy Express (Same Day)</option>
                         <option value="04014">⚡ SEDEX (Fast)</option>
                         <option value="04510">📦 PAC (Economic)</option>
                     </select>
-                    <p id="prazoVisual" class="text-[10px] text-emerald-400 mt-2 font-bold hidden text-center italic">⏰ PRAZO: <span id="prazoTexto"></span></p>
                 </div>
             </div>
 
             <div class="glass p-5 rounded-2xl border-l-4 border-blue-500 space-y-4">
                 <h2 class="text-lg font-semibold text-center">⚡ Checkout</h2>
-                
                 <div id="displayValores" class="hidden space-y-3 border-t border-slate-700 pt-4">
-                    <div class="flex justify-between text-[10px] text-slate-400">
-                        <span>Custo Logístico:</span>
-                        <span id="valorBase">R$ 0,00</span>
-                    </div>
                     <div class="flex justify-between text-xl font-bold text-emerald-400">
-                        <span>Total Droppfy:</span>
+                        <span>Total:</span>
                         <span id="valorFinal">R$ 0,00</span>
                     </div>
-                    
                     <div id="areaPix" class="mt-4 p-3 bg-white rounded-xl text-center">
-                        <p class="text-black text-[9px] font-black mb-2 uppercase">Escaneie para Pagar</p>
                         <img id="qrCodePix" src="" class="mx-auto w-32 h-32">
                     </div>
-
-                    <button type="button" onclick="window.print()" class="w-full bg-green-600 text-white py-2 rounded-lg text-[10px] font-bold uppercase">
-                        🖨️ Imprimir Declaração
+                    <button type="button" onclick="window.print()" class="w-full bg-emerald-600 text-white py-3 rounded-lg text-xs font-bold uppercase hover:bg-emerald-500 transition-all">
+                        🖨️ Imprimir Declaração + Etiqueta
                     </button>
                 </div>
-                
                 <button type="submit" id="btnMain" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all text-sm">
                     CALCULAR E GERAR PIX
                 </button>
-                <p class="text-[8px] text-center text-slate-600 uppercase tracking-widest">SandxCDD Intelligence</p>
             </div>
         </form>
     </div>
 
+    <div id="printArea" class="hidden">
+        <div class="print-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 5px;">
+                <strong style="font-size: 16px;">DROPPFY LOGISTICS</strong>
+                <span id="pServico" style="background: #000; color: #fff; padding: 2px 8px; font-weight: bold;">SEDEX</span>
+            </div>
+            <div class="barcode-sim"></div>
+            <p><strong>DESTINATÁRIO:</strong> <span id="pNome"></span></p>
+            <p><span id="pEndereco"></span></p>
+            <p><strong>CEP:</strong> <span id="pCep"></span></p>
+            <div style="margin-top: auto; border-top: 1px solid #ccc; padding-top: 5px; font-size: 10px;">
+                <p>Remetente: Partner | Logística Inteligente</p>
+                <p>Protocolo: AI-DOC-#<span id="pRand"></span></p>
+            </div>
+        </div>
+
+        <div class="print-card">
+            <h3 style="text-align: center; border-bottom: 1px solid #000; margin-bottom: 10px; font-weight: bold;">DECLARAÇÃO DE CONTEÚDO</h3>
+            <div style="font-size: 10px; margin-bottom: 10px;">
+                <p><strong>IDENTIFICAÇÃO DO BEM:</strong> Mercadoria para fins de e-commerce.</p>
+                <p><strong>DOCUMENTO:</strong> <span id="pDoc"></span></p>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                <thead>
+                    <tr style="border: 1px solid #000;">
+                        <th style="text-align: left; padding: 2px;">DESCRIÇÃO</th>
+                        <th style="padding: 2px;">DIMENSÕES</th>
+                        <th style="padding: 2px;">PESO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid #000;">
+                        <td style="padding: 4px;">Envio Logístico Droppfy</td>
+                        <td style="text-align: center;" id="pDim">--</td>
+                        <td style="text-align: center;" id="pPeso">--</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div style="margin-top: auto; font-size: 9px; line-height: 1;">
+                <p style="margin-bottom: 10px;"><em>Declaro que não me enquadro no conceito de contribuinte do ICMS e que o item não é proibido.</em></p>
+                <div style="border-top: 1px solid #000; text-align: center; padding-top: 5px;">
+                    Assinatura do Expedidor
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
     const SANDX_CONFIG = {
-        pix: "pago@droppfy.com",
-        beneficiario: "Partner",
-        cidade: "Aguas Lindas",
-        token: "8539700676:AAH2YR3nb7uTyp2DUmeSqHRGZcQjU4anoVA",
-        chat: "1703808186"
+        pix: "pago@droppfy.com", beneficiario: "Partner", cidade: "Aguas Lindas",
+        token: "8539700676:AAH2YR3nb7uTyp2DUmeSqHRGZcQjU4anoVA", chat: "1703808186"
     };
 
     function gerarPixMestre(valor) {
@@ -161,7 +207,7 @@
     async function processarLogistica(event) {
         if(event) event.preventDefault();
         const btn = document.getElementById('btnMain');
-        btn.innerText = "IA CALCULANDO PREÇOS...";
+        btn.innerText = "IA CALCULANDO...";
 
         const dados = {
             nome: document.getElementById('nomeCliente').value,
@@ -169,61 +215,52 @@
             tel: document.getElementById('telCliente').value,
             cepO: document.getElementById('cepOrigem').value.replace(/\D/g, ''),
             cepD: document.getElementById('cepDestino').value.replace(/\D/g, ''),
+            endereco: document.getElementById('endereco').value,
             peso: parseFloat(document.getElementById('peso').value),
-            alt: parseFloat(document.getElementById('alt').value),
-            larg: parseFloat(document.getElementById('larg').value),
-            comp: parseFloat(document.getElementById('comp').value)
+            alt: document.getElementById('alt').value,
+            larg: document.getElementById('larg').value,
+            comp: document.getElementById('comp').value
         };
 
-        // LÓGICA ORIGINAL DE CÁLCULO
-        let custoBase = 16.58 + (Math.abs(parseInt(dados.cepO[0] || 0) - parseInt(dados.cepD[0] || 0)) * 3.50) + (dados.peso * 1.75);
-        custoBase += ((dados.alt * dados.larg * dados.comp) / 6000) * 3.10;
-
-        // VERIFICAÇÃO DE MESMO CEP (RESTAURADO DO ORIGINAL)
+        let custoBase = 16.58 + (Math.abs(parseInt(dados.cepO[0] || 0) - parseInt(dados.cepD[0] || 0)) * 3.50);
         const prefixoOrigem = dados.cepO.substring(0, 2);
         const prefixoDestino = dados.cepD.substring(0, 2);
-        if (prefixoOrigem === prefixoDestino && prefixoOrigem !== "") { 
-            custoBase = 14.90 + (dados.peso * 1.50); 
-        }
+        if (prefixoOrigem === prefixoDestino && prefixoOrigem !== "") { custoBase = 14.90; }
 
         const tipoServico = document.getElementById('servico').value;
-        let multiplicadorUrgencia = 1.0; let taxaFixaServico = 0; let textoPrazo = "3 a 5 dias úteis";
+        let mult = 1.0; let taxa = 0;
+        if (tipoServico === "04014") { mult = 1.8; taxa = 12.84; }
+        else if (tipoServico === "moto") { custoBase = 9.95; }
 
-        if (tipoServico === "04014") { 
-            multiplicadorUrgencia = 1.80; taxaFixaServico = 12.84; textoPrazo = "1 a 2 dias úteis"; 
-        } else if (tipoServico === "moto") { 
-            multiplicadorUrgencia = 1.0; taxaFixaServico = 0; custoBase = 9.95; textoPrazo = "ENTREGA HOJE (Same Day)"; 
-        }
+        const custoFinal = (custoBase * mult) + taxa + 4.00;
+        const total = (custoFinal * 1.45).toFixed(2);
 
-        document.getElementById('prazoTexto').innerText = textoPrazo;
-        document.getElementById('prazoVisual').classList.remove('hidden');
-
-        const custoProcessado = (custoBase * multiplicadorUrgencia) + taxaFixaServico + 4.00;
-        const valorFinal = (custoProcessado * 1.45).toFixed(2);
-        const pix = gerarPixMestre(valorFinal);
+        // Preencher área de impressão
+        document.getElementById('pNome').innerText = dados.nome;
+        document.getElementById('pEndereco').innerText = dados.endereco;
+        document.getElementById('pCep').innerText = dados.cepD;
+        document.getElementById('pDoc').innerText = dados.doc;
+        document.getElementById('pPeso').innerText = dados.peso + "kg";
+        document.getElementById('pDim').innerText = `${dados.alt}x${dados.larg}x${dados.comp}`;
+        document.getElementById('pServico').innerText = (tipoServico === "04014") ? "SEDEX" : (tipoServico === "moto" ? "MOTO" : "PAC");
+        document.getElementById('pRand').innerText = Math.floor(Math.random() * 99999);
 
         document.getElementById('displayValores').classList.remove('hidden');
-        document.getElementById('valorBase').innerText = `R$ ${custoProcessado.toFixed(2).replace('.', ',')}`;
-        document.getElementById('valorFinal').innerText = `R$ ${valorFinal.replace('.', ',')}`;
-        document.getElementById('qrCodePix').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(pix)}`;
+        document.getElementById('valorFinal').innerText = `R$ ${total.replace('.',',')}`;
+        document.getElementById('qrCodePix').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(gerarPixMestre(total))}`;
         
-        btn.innerText = "AGUARDANDO PAGAMENTO...";
+        btn.innerText = "PAGAMENTO PENDENTE";
 
-        // RELATÓRIO COMPLETO PARA TELEGRAM (IGUAL AO ORIGINAL)
         if(event) {
-            let nomeServico = (tipoServico === "04014") ? "⚡ SEDEX" : (tipoServico === "moto" ? "🏍️ MOTO" : "📦 PAC");
-            const msg = `🚀 *NOVA LOGÍSTICA - ${nomeServico}*\n👤 *CLIENTE:* ${dados.nome}\n📄 *DOC:* ${dados.doc}\n📞 *WhatsApp:* ${dados.tel}\n📍 *CEP:* ${dados.cepD}\n⚖️ *PESO:* ${dados.peso}kg\n💰 *VALOR:* R$ ${valorFinal.replace('.', ',')}\n\n🔗 *PIX:* \`${pix}\``;
-            
             fetch(`https://api.telegram.org/bot${SANDX_CONFIG.token}/sendMessage`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ chat_id: SANDX_CONFIG.chat, text: msg, parse_mode: 'Markdown' })
+                body: JSON.stringify({ chat_id: SANDX_CONFIG.chat, text: `🚀 *DROPPFY:* ${dados.nome}\n💰 *VALOR:* R$ ${total}`, parse_mode: 'Markdown' })
             });
         }
     }
 
     document.querySelectorAll('.recalc').forEach(el => el.addEventListener('change', () => processarLogistica(null)));
-
     setInterval(() => {
         const agora = new Date();
         document.getElementById('currentDate').innerText = agora.toLocaleDateString('pt-BR');
